@@ -1,5 +1,6 @@
 import socket
 import ipaddress
+import netifaces
 
 
 def get_wifi_broadcast_address():
