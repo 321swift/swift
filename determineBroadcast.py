@@ -1,16 +1,29 @@
 import socket
 import ipaddress
+import netifaces
 
-def get_broadcast_address():
-    # get the IP address of the current host
-    hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
+def get_wifi_broadcast_address():
+    # Get the list of network interfaces on the local machine
+    interfaces = netifaces.interfaces()
 
-    # get the network address and netmask of the current network
-    net_address = ipaddress.IPv4Network(f"{ip_address}/24")  # assuming a subnet mask of /24
+    # Iterate over the interfaces and find the WiFi interface
+    for iface in interfaces:
+        if iface.startswith('w'):
+            addresses = netifaces.ifaddresses(iface)
+            if netifaces.AF_INET in addresses:
+                # Get the IPv4 address and netmask for the interface
+                ipv4 = addresses[netifaces.AF_INET][0]
+                netmask = ipv4['netmask']
 
-    # determine the broadcast address
-    broadcast_address = net_address.broadcast_address
+                # Calculate the broadcast address
+                broadcast = socket.inet_ntoa(
+                    struct.pack('!I', 
+                                (struct.unpack('!I', 
+                                               socket.inet_aton(ipv4['addr']))[0] 
+                                 | ((1 << 32 - netmask) - 1))
+                                )
+                    )
 
-    return str(broadcast_address)
+                return broadcast
+    return None
 
