@@ -1,22 +1,21 @@
 import socket
-import netifaces
-from broadcast2 import get_broadcast_address
+from getIP import get_ip_address
+from calcBroadcast import calculate_broadcast_address
 
-
-
-
-def send_broadcast_message(message, port=5050):
-    # Set the broadcast address for the current network
-    broadcast_address = get_broadcast_address();
+def send_broadcast_message(message = get_ip_address(), dest_port = 5050):
 
     # Create a UDP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    # Enable broadcasting on the socket
+    # Enable broadcasting mode
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-    # Send the message to the broadcast address
-    sock.sendto(message.encode(), (broadcast_address, port))
+    # Set the destination address and port number
+    dest_addr = calculate_broadcast_address('10.20.127.147/24')
+    dest = (dest_addr, dest_port)
+
+    # Send the message
+    sock.sendto(bytes(message, 'utf8'), dest)
 
     # Close the socket
     sock.close()
