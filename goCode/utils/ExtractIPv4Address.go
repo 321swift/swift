@@ -8,5 +8,5 @@ func ExtractIPV4Address(iface net.Interface) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return address[1].String(), nil
+	return address[len(address)-1].String(), nil
 }
