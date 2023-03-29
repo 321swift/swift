@@ -23,4 +23,7 @@ def calculate_broadcast_address(ip_subnet):
     
     return broadcast_address_str
 
-# print(calculate_broadcast_address('10.20.127.147/24'))
+def get_broadcast_address():
+    return calculate_broadcast_address('10.20.127.147/24')
+# print(calculate_broadcast_address('10.20.127.147/24')))
+
