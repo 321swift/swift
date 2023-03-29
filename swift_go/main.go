@@ -47,23 +47,40 @@ func GetBroadcastAddress(ipAddress string) (string, error) {
 	return broadcast.String(), nil
 }
 
-func main() {
-	print := fmt.Println
+func getUpnRunninginterfaces() ([]net.Interface, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		panic("an error occurred")
+		return nil, err
 	}
+
+	var upnRunning []net.Interface
+
 	// get all up and running interfaces
 	for _, interf := range interfaces {
 		if flags := interf.Flags; strings.Contains(flags.String(), "running") &&
 			strings.Contains(flags.String(), "up") &&
 			!strings.Contains(interf.Name, "VirtualBox") &&
 			!strings.Contains(interf.Name, "Loopback") {
-			addresses, err := interf.Addrs()
-			if err != nil {
-
-			}
-			print(GetBroadcastAddress(addresses[1].String()))
+			upnRunning = append(upnRunning, interf)
 		}
 	}
+	return upnRunning, nil
+}
+
+func ExtractIPV4Address(iface net.Interface) (string, error) {
+
+	address, err := iface.Addrs()
+	if err != nil {
+		return "", err
+	}
+	return address[1].String(), nil
+}
+
+func main() {
+	interfaces, err := getUpnRunninginterfaces()
+	if err != nil {
+		panic("error while getting up and runnign interfaces")
+	}
+	addr, _ := ExtractIPV4Address(interfaces[0])
+	fmt.Println(addr)
 }
