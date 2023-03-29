@@ -1,4 +1,4 @@
-package utils
+package core
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ func ListenForBroadcast(port int) ([]byte, error) {
 	defer conn.Close()
 
 	// Set a timeout for the socket
-	conn.SetReadDeadline(time.Now().Add(time.Second * 5))
+	conn.SetReadDeadline(time.Now().Add(time.Second * 45))
 
 	// Wait for a message
 	buffer := make([]byte, 1024)

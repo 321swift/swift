@@ -3,7 +3,7 @@ package utils
 import "net"
 
 // GetBroadcastAddress calculates the broadcast address for a given IP address and subnet
-func GetBroadcastAddress(ipAddress string) (string, error) {
+func CalcBroadcastAddress(ipAddress string) (string, error) {
 	// Parse the IP address and subnet
 	ip, ipNet, err := net.ParseCIDR(ipAddress)
 	if err != nil {
