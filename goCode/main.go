@@ -2,14 +2,53 @@ package main
 
 import (
 	"fmt"
+	c "swift/core"
 	u "swift/utils"
+	"sync"
+	"time"
 )
 
+var wg sync.WaitGroup
+
 func main() {
-	interfaces, err := u.GetUpnRunninginterfaces()
-	if err != nil {
-		panic("error while getting up and runnign interfaces")
+	wg.Add(1)
+
+	// // listen for message on the broadcast address
+	// message := make(chan []byte)
+	// go listener(message)
+	// fmt.Print(string(<-message))
+
+	// // send message on the broadcast address with port 5050
+	// for i := 0; i < 10; i++ {
+	// 	c.SendMessage(u.GetBroadcastAddress(), 5050, "hi there I am David")
+	// 	fmt.Printf("sent %d \n", i)
+	// 	time.Sleep(time.Second * 3)
+	// }
+	// close(message)
+	// c.ListenForBroadcast()
+
+	go sender()
+	message, senderAddress, _ := c.ListenForBroadcastMessage(5050)
+	fmt.Println(string(message), senderAddress)
+
+}
+
+// func listener(message chan []byte) {
+// 	defer wg.Done()
+
+// 	bytes, _ := c.ListenForBroadcast(5050)
+// 	message <- bytes
+// }
+
+func sender() {
+	defer wg.Done()
+
+	// // send message on the broadcast address with port 5050
+	u.GetIp()
+	for i := 0; i < 10; i++ {
+		c.SendMessage(u.GetBroadcastAddress(), 5050, "hi there I am David")
+		fmt.Printf("sent %d \n", i)
+		time.Sleep(time.Second * 3)
 	}
-	addr, _ := u.ExtractIPV4Address(interfaces[0])
-	fmt.Println(addr)
+
 }
