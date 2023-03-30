@@ -31,3 +31,17 @@
 7. The receiver receives the port number
 8. The receiver decrypts the port number using the earlier received encryption keys
 9. The receiver connects to the websocket on the port number decrypted in the previous step
+
+## Sender specifics
+
+1. The sender has two parts:
+   - The broadcaster
+   - The open socket
+2. The open socket and the broadcaster must be linked together via a state variable:
+   - The state variable is used to stop the broadcast when a new user connects to the sender
+   - The state variable is initially false
+   - The state variable be used to cause the broadcaster to stop broadcasting when the socket variable sets it to true
+
+## Receiver specifics
+
+1. The receiver is the part of the application that
