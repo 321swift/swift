@@ -16,17 +16,15 @@ func main() {
 	go sender()
 	message, senderAddress, _ := c.ListenForBroadcastMessage(5050)
 	fmt.Println(string(message), senderAddress)
-
-	// fmt.Println(u.GetIp())
 }
 
 func sender() {
 	defer wg.Done()
 
-	// // send message on the broadcast address with port 5050
+	// send message on the broadcast address with port 5050
 	u.GetIp()
 	for i := 0; i < 10; i++ {
-		c.SendMessage(u.GetBroadcastAddress(), 5050, "hello i am swift")
+		c.SendMessage(u.GetBroadcastAddress(), 5050, "Hello, I am swift")
 		fmt.Printf("sent %d \n", i)
 		time.Sleep(time.Second * 3)
 	}
