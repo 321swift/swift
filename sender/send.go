@@ -6,6 +6,7 @@ import (
 	"os"
 	"swift/core"
 	"swift/utils"
+	"time"
 )
 
 func Send() {
@@ -13,14 +14,16 @@ func Send() {
 	ips = utils.FilterIPs(ips)
 
 	broadcasts := utils.GetAllBroadcasts(ips)
-
 	devHostname, err := os.Hostname()
+	if err != nil {
+		devHostname = "user"
+	}
 
-	for _, addr := range broadcasts {
-		if err != nil {
-
-			core.SendMessage(addr, 5050, "@swift swiftUser")
+	for i := 15; i > 0; i-- {
+		for _, addr := range broadcasts {
+			core.SendMessage(addr, 5050, fmt.Sprintf("%s@swift", devHostname))
 		}
-		core.SendMessage(addr, 5050, fmt.Sprintf("@swift %s", devHostname))
+		time.Sleep(time.Second * 1)
+		fmt.Println("Sender sent ", i)
 	}
 }
