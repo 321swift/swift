@@ -7,9 +7,10 @@ import (
 
 func StartServer(portNumber int) {
 	// Listen for incoming connections on port 12345
-	listener, err := net.Listen("tcp", fmt.Sprintf("%d", portNumber))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", portNumber))
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println("from sender @ listener")
 		return
 	}
 	defer listener.Close()

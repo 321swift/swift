@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"net"
-	"os"
-	"strings"
+	"swift/receiver"
 	"swift/sender"
 	"sync"
 )
@@ -14,55 +11,63 @@ var wg sync.WaitGroup
 
 func main() {
 	role := WelcomeScreen()
-	if role == "1" {
-		//call the sender function
-	} else if role == "2" {
-		// call the receiver function
+	// fmt.Println(role, reflect.TypeOf(role))
+	if role == 1 {
+		// 	//call the sender function
+		sender.StartServer(5053)
+
+		// fmt.Println("role == 1")
+	} else if role == 2 {
+		// 	// call the receiver function
+		receiver.Listen(5050)
+		// fmt.Println("role == 2")
 	}
 }
 
-func WelcomeScreen() string {
-	var str string
+func WelcomeScreen() int64 {
+	var role int64
 
 	for i := false; !i; {
 		fmt.Println("")
 		fmt.Println("Welcome to the swift application")
 		fmt.Println("Select the role you wish to assume: \n\t 1. Sending \n\t 2. Receiving")
 
-		reader := bufio.NewReader(os.Stdin)
-		line, err := reader.ReadString('\n')
+		var number int64
+		_, err := fmt.Scanf("%d", &number)
 
 		if err != nil {
 			fmt.Println(err)
-		} else if len(line) != 1 &&
-			!strings.ContainsAny(line, "12") {
+		} else if number < 0 {
+			fmt.Println("Please enter one number only acording to the given options")
+		} else if number > 2 {
 			fmt.Println("Please enter one number only acording to the given options")
 		} else {
-			str = line
 			i = true
+			role = number
 		}
 	}
-	return str
+	return role
 }
 
-func BroadcastRoutine(port int, serverPort int) {
-	defer wg.Done()
-	sender.Broadcast(port, serverPort)
-}
-
-func ServerRouting(port int) {
-	defer wg.Done()
+func ServerRoutine(port int, broadcastPort int) {
+	wg.Add(1)
+	go startBroadcast(broadcastPort, port)
 	sender.StartServer(port)
 }
 
-func ConnectToSocket(ip string, port string) (net.Conn, error) {
-	// Connect to the server using the specified IP and port
-	conn, err := net.Dial("tcp", ip+":"+port)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	println("Connection made successfully")
-	return conn, nil
+func startBroadcast(broadcastPort int, port int) {
+	defer wg.Done()
+	sender.Broadcast(broadcastPort, port)
 }
+
+// func ConnectToSocket(ip string, port string) (net.Conn, error) {
+// 	// Connect to the server using the specified IP and port
+// 	conn, err := net.Dial("tcp", ip+":"+port)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return nil, err
+// 	}
+
+// 	println("Connection made successfully")
+// 	return conn, nil
+// }
