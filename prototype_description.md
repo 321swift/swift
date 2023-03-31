@@ -44,4 +44,16 @@
 
 ## Receiver specifics
 
-1. The receiver is the part of the application that
+1. The receiver is the part of the application that does two things
+   - first, it listens for the senders broadcast message
+   - second, it connects to the websocket opened by the sender.
+
+### Proposed Approach for the receiver component:
+
+1. The receiver starts listening for the broadcast message
+2. The receiver then receives the broadcast message
+3. the receiver uses obtains two things from the broadcast:
+   - the sender ip address
+   - the port number
+4. The receiver connect to the ip address on the port number specified
+5. then the file transfer session begins.
