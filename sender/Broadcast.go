@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func Broadcast(port int) {
+func Broadcast(port int, serverPort int) {
 	ips, _ := net.InterfaceAddrs()
 	ips = utils.FilterIPs(ips)
 
@@ -21,7 +21,11 @@ func Broadcast(port int) {
 
 	for i := 15; i > 0; i-- {
 		for _, addr := range broadcasts {
-			core.SendMessage(addr, port, fmt.Sprintf("%s@swift", devHostname))
+			core.SendMessage(
+				addr,
+				port,
+				fmt.Sprintf("%s@swift:%d", devHostname, serverPort),
+			)
 		}
 		time.Sleep(time.Second * 1)
 		fmt.Println("Sender sent ", i)
