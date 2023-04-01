@@ -28,6 +28,6 @@ func Broadcast(port int, serverPort int) {
 			)
 		}
 		time.Sleep(time.Second * 1)
-		fmt.Println("Sender sent ", i)
+		fmt.Println("Broadcast sent ", i)
 	}
 }
