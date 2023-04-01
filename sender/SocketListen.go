@@ -10,7 +10,6 @@ func StartServer(portNumber int) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", portNumber))
 	if err != nil {
 		fmt.Println(err)
-		fmt.Println("from sender @ listener")
 		return
 	}
 	defer listener.Close()
