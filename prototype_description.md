@@ -57,3 +57,19 @@
    - the port number
 4. The receiver connect to the ip address on the port number specified
 5. then the file transfer session begins.
+
+# Architecture of the Application:
+
+A problem is faces as we try to implement the application  
+on two fronts.
+
+1. How is the application to be structured such that logs and other data are passed out of the application successfully
+2. How can we structure the application so that it assumes a headless architecture: Headless in a sense that any presentation layer can be applied to it easily.
+
+## Proposed solutions:
+
+1. State machine architecture
+   - in this architecture, we propose that there would be a struct or an object containing a few variables:
+     1. a state variable which would be defined on a number of finite states. These states would describe the current status of application at any point in time.
+     2. dat1: A data channel which would be used for sending data out of the core of the application.
+     3. dat2: A data channel used to receive input from the outside of the core application.
