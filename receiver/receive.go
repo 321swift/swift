@@ -2,7 +2,7 @@ package receiver
 
 import "net"
 
-func ReceiveFile(conn net.TCPConn) ([]byte, error) {
+func receiveFile(conn net.TCPConn) ([]byte, error) {
 	var fileStream []byte
 	_, err := conn.Read(fileStream)
 	if err != nil {

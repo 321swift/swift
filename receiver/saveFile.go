@@ -1,11 +1,12 @@
 package receiver
 
-import "os"
+import (
+	"os"
+	"path"
+)
 
-func saveFile(file []byte) error {
-	// get file name
-	// bytes.
-	err := os.WriteFile("received", file, 0775)
+func saveFile(filename string, location string, file []byte) error {
+	err := os.WriteFile(path.Join(location, filename), file, 0775)
 	if err != nil {
 		return err
 	}
