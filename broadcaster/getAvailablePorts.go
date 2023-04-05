@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-func GetAvailablePorts() ([]int, error) {
+func getAvailablePorts() ([]int, error) {
 	var availablePorts []int
 
 	// Get list of network interfaces

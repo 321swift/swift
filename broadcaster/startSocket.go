@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-func StartSocket(portNumber int) {
+func startSocket(portNumber int) {
 	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", portNumber))
 	if err != nil {
 		log.Fatal("error occured while creating socket: ", err)
