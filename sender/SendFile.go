@@ -1,5 +1,0 @@
-package sender
-
-func SendFile() {
-
-}
