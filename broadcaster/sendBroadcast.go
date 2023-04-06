@@ -30,4 +30,5 @@ func sendBroadcast(broadcastPort int, socketPort int) {
 		}
 		time.Sleep(time.Second * 1)
 	}
+	fmt.Println("broadcast sent 15 times")
 }

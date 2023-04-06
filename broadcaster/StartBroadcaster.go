@@ -33,7 +33,7 @@ func StartupBroadcaster() {
 
 	wg.Add(2)
 	go startSocket(socketPort)
-	go sendBroadcast(broadcastPort, socketPort)
+	go sendBroadcast(5050, socketPort)
 
 	wg.Wait()
 
