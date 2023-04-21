@@ -1,0 +1,36 @@
+body{
+    background-color: #75c9b7;
+}
+/* Style the navbar */
+.navbar {
+    background-color: #ffffff; /* White background */
+    overflow: hidden;
+    text-align: right;
+  }
+  
+  /* Style the logo */
+  .logo {
+    float: left;
+    color: #333333;
+    padding: 14px 16px;
+  }
+  
+  /* Style the links inside the navbar */
+  .navbar .menu a {
+    display: inline-block;
+    color: #333333;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  
+  /* Change the color of links on hover */
+  .navbar .menu a:hover {
+    background-color: #dddddd;
+  }
+  
+  /* Add a color to the active/current link */
+  .navbar .menu .active {
+    background-color: #4CAF50;
+    color: white;
+  }
