@@ -14,3 +14,7 @@
     font-style: italic;
     font-stretch: 75% 125%;
     font-weight: 120 950;
+  }
+  body{
+    font-family: "Mulish, sans-serif";
+  }
