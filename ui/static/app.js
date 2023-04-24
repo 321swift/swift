@@ -1,5 +1,7 @@
-let socket;
-let statusQueue = [""];
+let props = {
+	socket: undefined,
+	statusQueue: [""],
+};
 
 let sendBtn = document.getElementById("sendBtn");
 let receiveBtn = document.getElementById("receiveBtn");
@@ -7,10 +9,20 @@ let statusArea = document.getElementById("status");
 
 let updateEvent = new Event("update", {});
 
-sendBtn.onclick = (e) => {
-	if (socket != undefined) {
+receiveBtn.onclick = (e) => {
+	if (props.socket != undefined) {
 		console.log("sending json");
-		socket.send(
+		props.socket.send(
+			JSON.stringify({
+				role: "client",
+			})
+		);
+	}
+};
+sendBtn.onclick = (e) => {
+	if (props.socket != undefined) {
+		console.log("sending json");
+		props.socket.send(
 			JSON.stringify({
 				role: "server",
 			})
@@ -26,15 +38,14 @@ function connectWebsocket() {
 		let conn = new WebSocket("ws://" + document.location.host + "/ws");
 		// Onopen
 		conn.onopen = function (evt) {
-			statusQueue.push("socket open");
-			statusArea.dispatchEvent(updateEvent);
-			socket = conn;
+			update("connected to backend");
+			props.socket = conn;
 		};
 
 		conn.onclose = function (evt) {
 			// Set disconnected
-			statusQueue.push("socket closed");
-			statusArea.dispatchEvent(updateEvent);
+			update("socket closed");
+			props.socket = undefined;
 		};
 
 		// Add a listener to the onmessage event
@@ -43,14 +54,10 @@ function connectWebsocket() {
 			// parse websocket message as JSON
 			const eventData = JSON.parse(evt.data);
 
-			// add event data to queue
-			statusQueue.push(eventData);
-			statusArea.dispatchEvent(updateEvent);
-			// // Let router manage message
-			// routeEvent(event);
+			update(eventData);
 		};
 	} else {
-		alert("Not supporting websockets");
+		alert("Not supporting websockets, \nPlease use a different browser");
 	}
 }
 /**
@@ -66,7 +73,14 @@ window.onload = function () {
 function handleUpdates() {
 	statusArea.addEventListener("update", (event) => {
 		let newChild = document.createElement("p");
-		newChild.textContent = statusQueue[statusQueue.length - 1];
+		newChild.textContent = props.statusQueue[props.statusQueue.length - 1];
 		statusArea.appendChild(newChild);
 	});
+}
+
+function update(data) {
+	if (data != undefined) {
+		props.statusQueue.push(data);
+		statusArea.dispatchEvent(updateEvent);
+	}
 }
