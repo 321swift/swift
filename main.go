@@ -110,10 +110,16 @@ func (s *UiServer) ReadLoop(w http.ResponseWriter) {
 		switch roleStruct.Role {
 		case "server":
 			s.socket.WriteJSON("assuming server role")
-		case "client":
-			s.socket.WriteJSON("assuming server role")
-		}
 
-		// s.socket.WriteJSON("you are now the server")
+		case "client":
+			s.socket.WriteJSON("assuming client role")
+		}
 	}
+}
+
+func assumeServer() {
+
+}
+func assumeClient() {
+
 }
