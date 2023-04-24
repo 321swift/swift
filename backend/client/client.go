@@ -23,6 +23,7 @@ type Client struct {
 	conn           net.Conn
 	hostname       string
 	AvailableHosts []Host
+	logger         *global.Logger
 }
 
 func NewClient() *Client {
