@@ -10,20 +10,23 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"net/http"
 	"os"
 	"path"
 	"swift2/global"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
-type client struct {
+type Client struct {
 	conn           net.Conn
 	hostname       string
 	AvailableHosts []Host
 }
 
-func NewClient() *client {
-	return &client{
+func NewClient() *Client {
+	return &Client{
 		hostname: fmt.Sprint("", rand.Intn(20)),
 	}
 }
@@ -33,7 +36,7 @@ type Host struct {
 	ipPort   string
 }
 
-func (c *client) Listen() {
+func (c *Client) Listen() {
 	// Resolve the broadcast address and port
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", global.BroadcastPort))
 	if err != nil {
@@ -66,7 +69,7 @@ func (c *client) Listen() {
 
 }
 
-func (c *client) Connect(address string) {
+func (c *Client) Connect(address string) {
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
 		log.Println(err)
@@ -80,7 +83,7 @@ func (c *client) Connect(address string) {
 
 }
 
-func (c *client) readLoop(conn net.Conn) {
+func (c *Client) readLoop(conn net.Conn) {
 	log.Println("Receiving file from connection")
 
 	for {
@@ -118,7 +121,40 @@ func (c *client) readLoop(conn net.Conn) {
 
 }
 
-func (c *client) Send(filePath string) error {
+func (c *Client) HandleFile(w http.ResponseWriter, r *http.Request) {
+	// upgrade connectin to websocket
+	upgrader := websocket.Upgrader{}
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	conn1, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("Error upgrading connection:", err)
+		return
+	}
+	messageType, message, err := conn1.ReadMessage()
+	if err != nil {
+		log.Println("Error reading message:", err)
+	}
+	if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
+		// Create a Message struct and encode it as JSON
+		msg := global.Message{}
+		err = json.Unmarshal(message, &msg)
+		if err != nil {
+			log.Println("Error encoding message:", err)
+		}
+		jsonMsg, err := json.Marshal(msg)
+		if err != nil {
+			log.Println("Error encoding message:", err)
+		}
+		err = binary.Write(c.conn, binary.LittleEndian, int64(len(jsonMsg)))
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		io.CopyN(c.conn, bytes.NewReader(jsonMsg), int64(len(jsonMsg)))
+		c.logger.WriteLog(fmt.Sprint("transfer complete: ", len(jsonMsg), "bytes sent"))
+	}
+}
+func (c *Client) Send(filePath string) error {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Println(err)
@@ -148,7 +184,7 @@ func (c *client) Send(filePath string) error {
 	return nil
 }
 
-func (c *client) Receive() {
+func (c *Client) Receive() {
 
 	// receive file size
 	var dataSize int64
@@ -178,7 +214,7 @@ func (c *client) Receive() {
 	}
 }
 
-func (c *client) Disconnect() error {
+func (c *Client) Disconnect() error {
 	err := c.conn.Close()
 	if err != nil {
 		log.Println(err)
