@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -84,9 +85,10 @@ func (s *Server) Start() {
 }
 
 func (s *Server) readLoop(conn net.Conn) {
-	defer conn.Close()
+	log.Println("Receiving file from connection")
 
 	for {
+
 		// receive file size
 		var dataSize int64
 		err := binary.Read(conn, binary.LittleEndian, &dataSize)
@@ -100,18 +102,21 @@ func (s *Server) readLoop(conn net.Conn) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.logger.WriteLog(fmt.Sprintf("Received %d bytes from %v", i, conn.RemoteAddr()))
+		log.Printf("Received %d bytes from %v", i, conn.RemoteAddr())
 
-		// seperate data from filename
-		filename, fileContent, ok := bytes.Cut(data.Bytes(), []byte("$$$$"))
-		if !ok {
-			s.logger.WriteLog("Unable to parse file... ")
+		// Decode the JSON-encoded message and extract the filename and data
+		var msg global.Message
+		err = json.Unmarshal(data.Bytes(), &msg)
+		if err != nil {
+			log.Println("Error decoding message:", err)
+			break
 		}
 
-		err = os.WriteFile(fmt.Sprintf("./1%s", filename), fileContent, os.ModePerm)
-
+		// Write the data to a file with the given filename
+		err = ioutil.WriteFile(msg.Filename, msg.Data, 0644)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("Error writing file:", err)
+			break
 		}
 	}
 
