@@ -23,8 +23,26 @@ body {
     width: 391px;
     font-size: 48px;
     margin-left: 40%;
-    font-family: Mulish;
+    animation-name: welcomeAnimation;
+    animation-duration: 6s;
+    animation-iteration-count: infinite;
+    font-family: 'Lato', sans-serif;
 }
+
+@keyframes welcomeAnimation {
+    0% {
+      transform: translateX(-50px);
+      opacity: 0;
+    }
+    50% {
+      transform: translateX(0px);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(50px);
+      opacity: 0;
+    }
+  }
 
 .swift{
     height: 225px;
