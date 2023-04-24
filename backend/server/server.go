@@ -132,9 +132,10 @@ func (s *Server) HandleFile(w http.ResponseWriter, r *http.Request) {
 	}
 	if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
 		// Create a Message struct and encode it as JSON
-		msg := global.Message{
-			Filename: "example.txt",
-			Data:     message,
+		msg := global.Message{}
+		err = json.Unmarshal(message, &msg)
+		if err != nil {
+			log.Println("Error encoding message:", err)
 		}
 		jsonMsg, err := json.Marshal(msg)
 		if err != nil {
@@ -148,62 +149,6 @@ func (s *Server) HandleFile(w http.ResponseWriter, r *http.Request) {
 		io.CopyN(s.client, bytes.NewReader(jsonMsg), int64(len(jsonMsg)))
 		s.logger.WriteLog(fmt.Sprint("transfer complete: ", len(jsonMsg), "bytes sent"))
 	}
-
-	// Create a channel to forward messages from conn1 to conn2
-	// forwardChan := make(chan []byte)
-
-	// sigChan := make(chan struct{})
-	// var wg sync.WaitGroup
-
-	// wg.Add(2)
-	// // Start a goroutine to read messages from conn1 and forward them to chan
-	// go func() {
-	// 	defer wg.Done()
-	// 	for {
-	// 		select {
-	// 		case <-sigChan:
-	// 			return
-	// 		default:
-	// 			messageType, message, err := conn1.ReadMessage()
-	// 			if err != nil {
-	// 				log.Println("Error reading message:", err)
-	// 				break
-	// 			}
-	// 			if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
-	// 				// Create a Message struct and encode it as JSON
-	// 				msg := global.Message{
-	// 					Filename: "example.txt",
-	// 					Data:     message,
-	// 				}
-	// 				jsonMsg, err := json.Marshal(msg)
-	// 				if err != nil {
-	// 					log.Println("Error encoding message:", err)
-	// 					break
-	// 				}
-	// 				forwardChan <- jsonMsg
-	// 				close(forwardChan)
-	// 			}
-	// 		}
-	// 	}
-	// }()
-
-	// // Start a goroutine to read messages from forwardChan and write them to conn2
-	// go func() {
-	// 	defer wg.Done()
-	// 	for message := range forwardChan {
-	// 		i, err := s.client.Write(message)
-	// 		if err != nil {
-	// 			s.logger.WriteLog(fmt.Sprint("Error writing message:", err))
-	// 			break
-	// 		}
-	// 		s.logger.WriteLog(fmt.Sprintf("Written %d bytes", i))
-	// 	}
-	// 	sigChan <- struct{}{}
-	// }()
-
-	// Wait for either goroutine to exit
-	// wg.Wait()
-	// s.client.Close()
 }
 
 func (s *Server) Send(filePath string) error {
