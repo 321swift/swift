@@ -51,7 +51,6 @@ func (s *UiServer) StartFileSocket() {
 	fmt.Println("starting uiserver")
 	s.filePort = global.GetAvailablePort(s.port)
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
 
 	r.HandleFunc("/file", s.backendServer.HandleFile)
 
@@ -80,6 +79,7 @@ func (s *UiServer) HandleWS(w http.ResponseWriter, r *http.Request) {
 		WriteBufferSize: 1024,
 	}
 
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -87,13 +87,6 @@ func (s *UiServer) HandleWS(w http.ResponseWriter, r *http.Request) {
 	}
 	s.socket = conn
 	conn.WriteJSON(`{"status": "ok"}`)
-	if !s.fskt {
-		s.fskt = true
-		s.StartFileSocket()
-	} else {
-		s.socket.WriteJSON(fmt.Sprintf(`{"fileSocket": %d}`, s.filePort))
-	}
-
 	go s.ReadLoop(w)
 }
 
@@ -105,7 +98,7 @@ func (s *UiServer) ReadLoop(w http.ResponseWriter) {
 			log.Println(err)
 			s.socket.WriteJSON("server err")
 		}
-		log.Println(string(content))
+		// log.Println(string(content))
 
 		var roleStruct = &struct{ Role string }{}
 		err = json.Unmarshal(content, roleStruct)
@@ -127,5 +120,13 @@ func (s *UiServer) assumeServer(conn websocket.Conn) {
 	logger := global.NewLogger(conn)
 
 	s.backendServer = server.NewServer(logger)
+
+	if !s.fskt {
+		s.fskt = true
+		go s.StartFileSocket()
+	} else {
+		s.socket.WriteJSON(fmt.Sprintf(`{"fileSocket": %d}`, s.filePort))
+	}
+
 	s.backendServer.Start()
 }
