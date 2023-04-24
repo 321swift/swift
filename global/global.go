@@ -12,17 +12,16 @@ const (
 
 var BackendServerPort = 0
 
-func GetAvailablePort() int {
-	var serverPort = 5050
+func GetAvailablePort(desiredPort int) int {
 	for {
-		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", serverPort))
+		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", desiredPort))
 		if err == nil {
 			listener.Close()
-			return serverPort
+			return desiredPort
 		}
 		// Port is already in use, so try the next one
-		log.Printf("Port %d already in use, trying next port\n", serverPort)
-		serverPort++
+		log.Printf("Port %d already in use, trying next port\n", desiredPort)
+		desiredPort++
 
 	}
 }

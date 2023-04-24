@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (s *server) Broadcast() {
+func (s *Server) Broadcast() {
 	var wg sync.WaitGroup
 	ipnets := s.GetActiveIps()
 	addrs := make([]net.IP, 0)
@@ -36,7 +36,7 @@ func (s *server) Broadcast() {
 	wg.Wait()
 }
 
-func (s *server) GetActiveIps() []net.IPNet {
+func (s *Server) GetActiveIps() []net.IPNet {
 	interfaces, err := s.getUpnRunninginterfaces()
 	var addrs []net.IPNet
 	if err != nil {
@@ -54,7 +54,7 @@ func (s *server) GetActiveIps() []net.IPNet {
 // GetBroadcastAddress calculates the broadcast
 // address for a given IP address and subnet
 // in the format: ip/subnet
-func (s *server) calcBroadcastAddress(ipSub net.IPNet) (net.IP, error) {
+func (s *Server) calcBroadcastAddress(ipSub net.IPNet) (net.IP, error) {
 	// Parse the IP address and subnet
 	ip, ipNet, err := net.ParseCIDR(ipSub.String())
 	if err != nil {
@@ -75,7 +75,7 @@ func (s *server) calcBroadcastAddress(ipSub net.IPNet) (net.IP, error) {
 	return broadcast, nil
 }
 
-func (s *server) extractIPV4Address(iface net.Interface) *net.IPNet {
+func (s *Server) extractIPV4Address(iface net.Interface) *net.IPNet {
 	addrs, err := iface.Addrs()
 	if err != nil {
 		return nil
@@ -89,7 +89,7 @@ func (s *server) extractIPV4Address(iface net.Interface) *net.IPNet {
 	return nil
 }
 
-func (s *server) getUpnRunninginterfaces() ([]net.Interface, error) {
+func (s *Server) getUpnRunninginterfaces() ([]net.Interface, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (s *server) getUpnRunninginterfaces() ([]net.Interface, error) {
 }
 
 // SendMessage sends a message on a given IP address and port number
-func (s *server) sendMessage(address net.IP, message string) error {
+func (s *Server) sendMessage(address net.IP, message string) error {
 	// convert message to a byte array
 	messageInBytes := []byte(message)
 

@@ -10,9 +10,8 @@ import (
 	"net"
 	"os"
 	"path"
+	"swift2/global"
 	"time"
-
-	"github.com/321swift/swift/global"
 )
 
 type client struct {
@@ -68,7 +67,8 @@ func (c *client) Listen() {
 func (c *client) Connect(address string) {
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
 	c.conn = conn

@@ -1,13 +1,38 @@
 let props = {
 	socket: undefined,
+	fileSocket: undefined,
+	fileSocketPort: undefined,
 	statusQueue: [""],
 };
 
 let sendBtn = document.getElementById("sendBtn");
 let receiveBtn = document.getElementById("receiveBtn");
 let statusArea = document.getElementById("status");
+let fileInput = document.getElementById("fileInput");
+console.log(fileInput);
 
 let updateEvent = new Event("update", {});
+
+fileInput.addEventListener("change", (event) => {
+	const reader = new FileReader();
+	reader.addEventListener("load", (event) => {
+		const result = event.target.result;
+		// Do something with result
+		console.log(result);
+		if (props.socket != undefined) {
+			props.fileSocket.send(result);
+		}
+	});
+
+	reader.addEventListener("progress", (event) => {
+		if (event.loaded && event.total) {
+			const percent = (event.loaded / event.total) * 100;
+			console.log(`Progress: ${Math.round(percent)}`);
+		}
+	});
+
+	reader.readAsArrayBuffer(event.target.files[0]);
+});
 
 receiveBtn.onclick = (e) => {
 	if (props.socket != undefined) {
@@ -34,14 +59,13 @@ function connectWebsocket() {
 	// Check if the browser supports WebSocket
 	if (window["WebSocket"]) {
 		console.log("supports websockets");
-		// Connect to websocket using OTP as a GET parameter
 		let conn = new WebSocket("ws://" + document.location.host + "/ws");
+
 		// Onopen
 		conn.onopen = function (evt) {
 			update("connected to backend");
 			props.socket = conn;
 		};
-
 		conn.onclose = function (evt) {
 			// Set disconnected
 			update("socket closed");
@@ -50,15 +74,34 @@ function connectWebsocket() {
 
 		// Add a listener to the onmessage event
 		conn.onmessage = function (evt) {
-			console.log(evt);
 			// parse websocket message as JSON
 			const eventData = JSON.parse(evt.data);
-
+			if (JSON.parse(eventData).hasOwnProperty("fileSocket")) {
+				props.fileSocketPort = JSON.parse(eventData).fileSocket;
+				if (props.fileSocket == undefined) {
+					setupFileSocket();
+				}
+			}
 			update(eventData);
 		};
 	} else {
 		alert("Not supporting websockets, \nPlease use a different browser");
 	}
+}
+
+function setupFileSocket() {
+	let conn = new WebSocket("ws://" + document.location.host + "/ws");
+
+	// Onopen
+	conn.onopen = function (evt) {
+		update("connected to fileSocket");
+		props.fileSocket = conn;
+	};
+	conn.onclose = function (evt) {
+		// Set disconnected
+		update("file socket closed");
+		props.fileSocket = undefined;
+	};
 }
 /**
  * Once the website loads
