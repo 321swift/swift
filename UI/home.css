@@ -1,80 +1,83 @@
-body {
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    color: #333;
-}
-
-.nav {
-    background-color: #eee;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-}
-
-.menu {
-    list-style: none;
+*{
     margin: 0;
     padding: 0;
 }
 
-.menu li {
-    display: inline-block;
-    margin-right: 10px;
+body {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    color: #333333;
 }
 
-.menu li a {
-    color: #333;
-    text-decoration: none;
+.hero-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #E0DEDE;
+}
+
+.welcome{
+    height: 56px;
+    width: 391px;
+    font-size: 48px;
+    margin-left: 40%;
+    font-family: Mulish;
+}
+
+.swift{
+    height: 225px;
+    width: 308px;
+    font-size: 128px;
     font-weight: bold;
+    letter-spacing: 4px;
+    font-family: 'Lucida Handwriting', cursive;
 }
 
-.menu li a:hover {
-    color: #fff;
-    background-color: #333;
-    padding: 5px 10px;
-    border-radius: 5px;
-}
-
-.section {
-    padding: 50px;
-    background-color: #fff;
-}
-
-.svg img {
-    width: 600px;
-    height: 400px;
-    opacity: 0.7;
+.hero-image {
+    width: 473px;
+    height: 268px;
     display: flex;
     justify-content: center;
-    align-items: center;
-}
-
-.hero-text {
     text-align: center;
-    margin-top: 20px;
 }
 
-.hero-text h1 {
-    font-size: 3em;
-    margin: 0;
-}
-
-.button {
+button{
+    width: 260px;
+    height: 70px;
     text-align: center;
-    margin-top: 20px;
-}
-
-.button button {
-    background-color: #333;
-    color: #fff;
+    background-color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    margin-right: 10px;
 }
 
-.button button:hover {
-    cursor: pointer;
-    background-color: #fff;
-    color: #333;
+.btn1,
+.btn2 {
+  display: inline-block;
+  border-radius: 10px;
+  padding: 10px 20px;
+  margin-right: 10px;
+  background-color: #FAFAFA;
+  color: #000000;
+  font-size: 36px;
+  border: none;
+  text-align: center;
+  text-decoration: none;
 }
+
+.btn1:hover,
+.btn2:hover {
+  background-color: #6C63FF;
+  cursor: pointer;
+}
+
+button a{
+    text-decoration: none;
+    color: #000000;
+}
+
+button a:hover{
+    color: #FAFAFA;
+}
+
+
