@@ -25,3 +25,8 @@ func GetAvailablePort(desiredPort int) int {
 
 	}
 }
+
+type Message struct {
+	Filename string `json:"filename"`
+	Data     []byte `json:"data"`
+}

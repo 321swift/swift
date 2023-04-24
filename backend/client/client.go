@@ -3,8 +3,10 @@ package client
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -79,7 +81,8 @@ func (c *client) Connect(address string) {
 }
 
 func (c *client) readLoop(conn net.Conn) {
-	defer conn.Close()
+	log.Println("Receiving file from connection")
+
 	for {
 
 		// receive file size
@@ -97,17 +100,19 @@ func (c *client) readLoop(conn net.Conn) {
 		}
 		log.Printf("Received %d bytes from %v", i, conn.RemoteAddr())
 
-		// seperate data from filename
-		filename, fileContent, ok := bytes.Cut(data.Bytes(), []byte("$$$$"))
-		if !ok {
-			log.Println("Unable to parse file... ")
+		// Decode the JSON-encoded message and extract the filename and data
+		var msg global.Message
+		err = json.Unmarshal(data.Bytes(), &msg)
+		if err != nil {
+			log.Println("Error decoding message:", err)
+			break
 		}
 
-		// err = os.WriteFile(fmt.Sprintf("./1%s", filename), fileContent, os.ModePerm)
-		err = os.WriteFile(fmt.Sprintf("./%s%s", c.hostname, filename), fileContent, os.ModePerm)
-
+		// Write the data to a file with the given filename
+		err = ioutil.WriteFile(msg.Filename, msg.Data, 0644)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("Error writing file:", err)
+			break
 		}
 	}
 
