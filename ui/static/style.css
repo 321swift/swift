@@ -44,4 +44,5 @@ body {
 	border-radius: 0.2rem;
 
 	min-height: 20rem;
+	scroll-behavior: auto;
 }
