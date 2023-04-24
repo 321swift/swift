@@ -16,9 +16,12 @@ import (
 )
 
 type UiServer struct {
-	socket *websocket.Conn
-	port   int
-	role   string
+	socket        *websocket.Conn
+	port          int
+	filePort      int
+	role          string
+	fskt          bool
+	backendServer *server.Server
 }
 
 func NewUiServer() *UiServer {
@@ -44,17 +47,28 @@ func OpenPage(url string) {
 	}
 
 }
+func (s *UiServer) StartFileSocket() {
+	fmt.Println("starting uiserver")
+	s.filePort = global.GetAvailablePort(s.port)
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+
+	r.HandleFunc("/file", s.backendServer.HandleFile)
+
+	fmt.Printf("file Server started on port %d\n", s.filePort)
+	s.socket.WriteJSON(fmt.Sprintf(`{"fileSocket": %d}`, s.filePort))
+	http.ListenAndServe(fmt.Sprintf(":%d", s.filePort), r)
+}
 
 func (s *UiServer) Start() {
 	fmt.Println("starting uiserver")
-	s.port = global.GetAvailablePort()
+	s.port = global.GetAvailablePort(3000)
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
 	r.Handle("/", http.FileServer(http.Dir("./ui")))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("ui/static"))))
 	r.HandleFunc("/ws", s.HandleWS)
-
 	fmt.Printf("Server started on port %d\n", s.port)
 	OpenPage(fmt.Sprintf("http://localhost:%d", s.port))
 	http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
@@ -72,7 +86,13 @@ func (s *UiServer) HandleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.socket = conn
-	conn.WriteJSON("status: ok")
+	conn.WriteJSON(`{"status": "ok"}`)
+	if !s.fskt {
+		s.fskt = true
+		s.StartFileSocket()
+	} else {
+		s.socket.WriteJSON(fmt.Sprintf(`{"fileSocket": %d}`, s.filePort))
+	}
 
 	go s.ReadLoop(w)
 }
@@ -96,16 +116,16 @@ func (s *UiServer) ReadLoop(w http.ResponseWriter) {
 		switch roleStruct.Role {
 		case "server":
 			s.socket.WriteJSON("assuming server role")
-			assumeServer(*s.socket)
+			s.assumeServer(*s.socket)
 		case "client":
 			s.socket.WriteJSON("assuming client role")
 		}
 	}
 }
-func assumeServer(conn websocket.Conn) {
+func (s *UiServer) assumeServer(conn websocket.Conn) {
 	defer conn.Close()
 	logger := global.NewLogger(conn)
 
-	server := server.NewServer(logger)
-	server.Start()
+	s.backendServer = server.NewServer(logger)
+	s.backendServer.Start()
 }

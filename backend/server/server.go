@@ -7,14 +7,17 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"path"
 	"swift2/global"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
-type server struct {
-	conn          net.Conn
+type Server struct {
+	client        net.Conn
 	hostname      string
 	serverPort    int
 	listener      net.Listener
@@ -23,11 +26,11 @@ type server struct {
 	logger        *global.Logger
 }
 
-func NewServer(logger *global.Logger) *server {
+func NewServer(logger *global.Logger) *Server {
 	name, _ := os.Hostname()
-	sPort := global.GetAvailablePort()
+	sPort := global.GetAvailablePort(51413)
 	global.BackendServerPort = sPort
-	return &server{
+	return &Server{
 		hostname:      name,
 		serverPort:    sPort,
 		serverTimeout: time.Second * 10,
@@ -35,11 +38,11 @@ func NewServer(logger *global.Logger) *server {
 	}
 }
 
-func (s *server) Shutdown() {
+func (s *Server) Shutdown() {
 	defer s.logger.WriteLog("Server stopped")
 	s.listener.Close()
-	if s.conn != nil {
-		err := s.conn.Close()
+	if s.client != nil {
+		err := s.client.Close()
 		if err != nil {
 			return
 		} else {
@@ -49,7 +52,7 @@ func (s *server) Shutdown() {
 	}
 }
 
-func (s *server) Start() {
+func (s *Server) Start() {
 	go func() {
 		s.Broadcast()
 	}()
@@ -73,13 +76,13 @@ func (s *server) Start() {
 		}
 		s.timer.Stop()
 		s.logger.WriteLog(fmt.Sprint("Connection made: ", conn))
-		s.conn = conn
+		s.client = conn
 		conn.Write([]byte("Welcome to this "))
 		go s.readLoop(conn)
 	}
 }
 
-func (s *server) readLoop(conn net.Conn) {
+func (s *Server) readLoop(conn net.Conn) {
 	defer conn.Close()
 
 	for {
@@ -113,7 +116,56 @@ func (s *server) readLoop(conn net.Conn) {
 
 }
 
-func (s *server) Send(filePath string) error {
+func (s *Server) HandleFile(w http.ResponseWriter, r *http.Request) {
+	//upgrade connectin to websocket
+	upgrader := websocket.Upgrader{}
+	conn1, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("Error upgrading connection:", err)
+		return
+	}
+	defer conn1.Close()
+
+	s.logger.WriteLog("sending file")
+
+	/*
+		Get client connection and put it here
+	*/
+
+	// Create a channel to forward messages from conn1 to conn2
+	forwardChan := make(chan []byte)
+
+	// Start a goroutine to read messages from conn1 and forward them to chan
+	go func() {
+		for {
+			messageType, message, err := conn1.ReadMessage()
+			if err != nil {
+				log.Println("Error reading message:", err)
+				break
+			}
+			if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
+				forwardChan <- message
+			}
+		}
+	}()
+
+	// Start a goroutine to read messages from forwardChan and write them to conn2
+	go func() {
+		for message := range forwardChan {
+			i, err := s.client.Write(message)
+			if err != nil {
+				s.logger.WriteLog(fmt.Sprint("Error writing message:", err))
+				break
+			}
+			s.logger.WriteLog(fmt.Sprintf("Written %d bytes", i))
+		}
+	}()
+
+	// Wait for either goroutine to exit
+	select {}
+}
+
+func (s *Server) Send(filePath string) error {
 	fmt.Println("sending")
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -127,14 +179,14 @@ func (s *server) Send(filePath string) error {
 
 	// send file size
 	go func() {
-		err = binary.Write(s.conn, binary.LittleEndian, int64(len(data)))
+		err = binary.Write(s.client, binary.LittleEndian, int64(len(data)))
 		if err != nil {
 			s.logger.WriteLog(err)
 			return
 		}
 
 		// send data
-		i, err := io.CopyN(s.conn, bytes.NewReader(data), int64(len(data)))
+		i, err := io.CopyN(s.client, bytes.NewReader(data), int64(len(data)))
 		if err != nil {
 			s.logger.WriteLog(err)
 			return
