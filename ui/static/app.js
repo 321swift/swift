@@ -76,7 +76,7 @@ function connectWebsocket() {
 		conn.onmessage = function (evt) {
 			// parse websocket message as JSON
 			const eventData = JSON.parse(evt.data);
-			if (JSON.parse(eventData).hasOwnProperty("fileSocket")) {
+			if (isJsonString(eventData) && JSON.parse(eventData).hasOwnProperty("fileSocket")) {
 				props.fileSocketPort = JSON.parse(eventData).fileSocket;
 				if (props.fileSocket == undefined) {
 					setupFileSocket();
@@ -90,7 +90,9 @@ function connectWebsocket() {
 }
 
 function setupFileSocket() {
-	let conn = new WebSocket("ws://" + document.location.host + "/ws");
+	let conn = new WebSocket(
+		"ws://" + document.location.hostname + ":" + props.fileSocketPort + "/file"
+	);
 
 	// Onopen
 	conn.onopen = function (evt) {
@@ -126,4 +128,12 @@ function update(data) {
 		props.statusQueue.push(data);
 		statusArea.dispatchEvent(updateEvent);
 	}
+}
+function isJsonString(str) {
+	try {
+		JSON.parse(str);
+	} catch (e) {
+		return false;
+	}
+	return true;
 }

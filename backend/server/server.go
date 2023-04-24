@@ -28,7 +28,7 @@ type Server struct {
 
 func NewServer(logger *global.Logger) *Server {
 	name, _ := os.Hostname()
-	sPort := global.GetAvailablePort(51413)
+	sPort := global.GetAvailablePort(5150)
 	global.BackendServerPort = sPort
 	return &Server{
 		hostname:      name,
@@ -64,7 +64,8 @@ func (s *Server) Start() {
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.serverPort))
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	s.listener = listener
 
@@ -117,8 +118,9 @@ func (s *Server) readLoop(conn net.Conn) {
 }
 
 func (s *Server) HandleFile(w http.ResponseWriter, r *http.Request) {
-	//upgrade connectin to websocket
+	// upgrade connectin to websocket
 	upgrader := websocket.Upgrader{}
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn1, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Error upgrading connection:", err)
