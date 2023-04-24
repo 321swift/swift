@@ -15,12 +15,18 @@ let updateEvent = new Event("update", {});
 
 fileInput.addEventListener("change", (event) => {
 	const reader = new FileReader();
+	let filename = "";
 	reader.addEventListener("load", (event) => {
 		const result = event.target.result;
 		// Do something with result
 		console.log(result);
 		if (props.socket != undefined) {
-			props.fileSocket.send(result);
+			props.fileSocket.send(
+				JSON.stringify({
+					Filename: filename,
+					Data: result,
+				})
+			);
 		}
 	});
 
@@ -32,6 +38,7 @@ fileInput.addEventListener("change", (event) => {
 	});
 
 	reader.readAsArrayBuffer(event.target.files[0]);
+	filename = event.target.files[0].name;
 });
 
 receiveBtn.onclick = (e) => {
