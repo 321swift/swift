@@ -10,12 +10,33 @@ body {
 }
 
 .hero-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 95vh;
+    padding: 3rem calc((100vw - 1300px) / 2);
+    background-color: #E0DEDE;
+}
+
+.column-left{
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    height: 100vh;
-    background-color: #E0DEDE;
+    align-items: flex-start;
+    padding: 0rem 2rem;
+}
+
+.column-left p{
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    line-height: 1.5;
+}
+
+.column-right{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
 }
 
 .welcome{
@@ -98,4 +119,30 @@ button a:hover{
     color: #FAFAFA;
 }
 
+@media screen and (max-width: 1000px) {
+    .hero-container{
+        grid-template-columns: 1fr;
+    }
 
+    .btn1,
+    .btn2 {
+        display: inline-block;
+        border-radius: 10px;
+        padding: 5px 10px;
+        margin-right: 5px;
+        background-color: #FAFAFA;
+        color: #000000;
+        font-size: 18px;
+        border: none;
+        text-align: center;
+        text-decoration: none;
+    } 
+
+    button{
+        width: 150px;
+        height: 50px;
+        text-align: center;
+        background-color: white;
+        border: none;
+    }
+}
