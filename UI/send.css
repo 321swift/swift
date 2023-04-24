@@ -1,49 +1,49 @@
-body{
-    background-color: #fff;
+body {
+	background-color: #fffefe;
 }
 /* Style the navbar */
 .navbar {
-    background-color: #3ae8c4; /* White background */
-    overflow: hidden;
-    text-align: right;
-  }
-  
-  /* Style the logo */
-  .logo {
-    float: left;
-    color: #333333;
-    padding: 14px 16px;
-  }
-  
-  /* Style the links inside the navbar */
-  .navbar .menu a {
-    display: inline-block;
-    color: #333333;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-  }
-  
-  /* Change the color of links on hover */
-  .navbar .menu a:hover {
-    background-color: #dddddd;
-  }
-  
-  /* Add a color to the active/current link */
-  .navbar .menu .active {
-    background-color: #4CAF50;
-    color: white;
-  }
+	background-color: #3ae8c4; /* White background */
+	overflow: hidden;
+	text-align: right;
+}
 
-  .send-text {
-    text-align: center;
-    margin-top: 60px;
-  }
+/* Style the logo */
+.logo {
+	float: left;
+	color: #333333;
+	padding: 14px 16px;
+}
 
-  .send-img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%;
-    height: 50%;
-  }
+/* Style the links inside the navbar */
+.navbar .menu a {
+	display: inline-block;
+	color: #333333;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+}
+
+/* Change the color of links on hover */
+.navbar .menu a:hover {
+	background-color: #dddddd;
+}
+
+/* Add a color to the active/current link */
+.navbar .menu .active {
+	background-color: #4caf50;
+	color: white;
+}
+
+.send-text {
+	text-align: center;
+	margin-top: 60px;
+}
+
+.send-img {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	width: 50%;
+	height: 50%;
+}
