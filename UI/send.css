@@ -1,9 +1,9 @@
 body{
-    background-color: #75c9b7;
+    background-color: #fff;
 }
 /* Style the navbar */
 .navbar {
-    background-color: #ffffff; /* White background */
+    background-color: #3ae8c4; /* White background */
     overflow: hidden;
     text-align: right;
   }
@@ -33,4 +33,17 @@ body{
   .navbar .menu .active {
     background-color: #4CAF50;
     color: white;
+  }
+
+  .send-text {
+    text-align: center;
+    margin-top: 60px;
+  }
+
+  .send-img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    height: 50%;
   }
