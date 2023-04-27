@@ -1,149 +1,131 @@
-*{
-    margin: 0;
-    padding: 0;
+* {
+	margin: 0;
+	padding: 0;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    color: #333333;
+	font-size: 16px;
+	color: #333333;
 }
 
-.hero-container{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    height: 95vh;
-    padding: 3rem calc((100vw - 1300px) / 2);
-    background-color: #E0DEDE;
+.hero-container {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	height: 95vh;
+	padding: 3rem calc((100vw - 1300px) / 2);
+	background-color: #e0dede;
 }
 
-.column-left{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 0rem 2rem;
+.column-left {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	padding: 0rem 2rem;
 }
 
-.column-left p{
-    margin-bottom: 2rem;
-    font-size: 1.5rem;
-    line-height: 1.5;
-    font-style: italic;
+.column-left p {
+	margin-bottom: 2rem;
+	font-size: 1.4rem;
+	line-height: 150%;
+	font-weight: 500;
 }
 
-.column-right{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    
+.column-right {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
 }
 
-.welcome{
-    height: 56px;
-    width: 391px;
-    font-size: 48px;
-    margin-left: 40%;
-    animation-name: welcomeAnimation;
-    animation-duration: 6s;
-    animation-iteration-count: infinite;
-    font-family: 'Lato', sans-serif;
+.welcome {
+	font-size: 2rem;
+	margin-left: 40%;
+	animation-name: welcomeAnimation;
+	animation-duration: 6s;
+	animation-iteration-count: infinite;
 }
 
 @keyframes welcomeAnimation {
-    0% {
-      transform: translateX(-50px);
-      opacity: 0;
-    }
-    50% {
-      transform: translateX(0px);
-      opacity: 1;
-    }
-    100% {
-      transform: translateX(50px);
-      opacity: 0;
-    }
-  }
+	0% {
+		transform: translateX(-50px);
+		opacity: 0;
+	}
+	50% {
+		transform: translateX(0px);
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(50px);
+		opacity: 0;
+	}
+}
 
-.swift{
-    height: 225px;
-    width: 308px;
-    font-size: 128px;
-    font-weight: bold;
-    letter-spacing: 4px;
-    font-family: 'Lucida Handwriting', cursive;
+.swift {
+	font-size: 10rem;
+	font-weight: 700;
+	font-family: "Tangerine", cursive;
 }
 
 .hero-image {
-    width: 473px;
-    height: 268px;
-    display: flex;
-    justify-content: center;
-    text-align: center;
+	width: 473px;
+	height: 268px;
+	margin-bottom: 1rem;
 }
 
-button{
-    width: 260px;
-    height: 70px;
-    text-align: center;
-    background-color: white;
-    border: none;
+.btt {
+	display: flex;
+	justify-content: space-between;
+	width: 433px;
+	margin-left: -2rem;
+}
+button {
+	min-width: 7em;
+	text-align: center;
+	background-color: white;
+	font-family: inherit;
+	font-size: 1.4rem;
+	font-weight: 700;
+	border: none;
+	border-radius: 0.3rem;
+	padding: 0.6em 2em;
 }
 
 .btn1,
 .btn2 {
-  display: inline-block;
-  border-radius: 10px;
-  padding: 10px 20px;
-  margin-right: 10px;
-  background-color: #FAFAFA;
-  color: #000000;
-  font-size: 36px;
-  border: none;
-  text-align: center;
-  text-decoration: none;
+	display: inline-block;
 }
 
-.btn1:hover,
-.btn2:hover {
-  background-color: #6C63FF;
-  cursor: pointer;
-}
-
-button a{
-    text-decoration: none;
-    color: #000000;
-}
-
-button a:hover{
-    color: #FAFAFA;
+button:hover {
+	background-color: #6c63ff;
+	color: white;
+	cursor: pointer;
 }
 
 @media screen and (max-width: 1000px) {
-    .hero-container{
-        grid-template-columns: 1fr;
-    }
+	.hero-container {
+		grid-template-columns: 1fr;
+	}
 
-    .btn1,
-    .btn2 {
-        display: inline-block;
-        border-radius: 10px;
-        padding: 5px 10px;
-        margin-right: 5px;
-        background-color: #FAFAFA;
-        color: #000000;
-        font-size: 18px;
-        border: none;
-        text-align: center;
-        text-decoration: none;
-    } 
+	.btn1,
+	.btn2 {
+		display: inline-block;
+		border-radius: 10px;
+		padding: 5px 10px;
+		margin-right: 5px;
+		background-color: #fafafa;
+		color: #000000;
+		font-size: 18px;
+		border: none;
+		text-align: center;
+		text-decoration: none;
+	}
 
-    button{
-        width: 150px;
-        height: 50px;
-        text-align: center;
-        background-color: white;
-        border: none;
-    }
+	button {
+		width: 150px;
+		height: 50px;
+		text-align: center;
+		background-color: white;
+		border: none;
+	}
 }
