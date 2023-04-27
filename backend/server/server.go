@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -113,7 +112,7 @@ func (s *Server) readLoop(conn net.Conn) {
 		}
 
 		// Write the data to a file with the given filename
-		err = ioutil.WriteFile(msg.Filename, msg.Data, 0644)
+		err = os.WriteFile(msg.Filename, msg.Data, 0644)
 		if err != nil {
 			log.Println("Error writing file:", err)
 			break
