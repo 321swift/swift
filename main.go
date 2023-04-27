@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"swift2/backend/client"
 	"swift2/global"
-	"swift2/ui"
+	"swift2/ui2"
 	"time"
 )
 
@@ -16,6 +16,6 @@ func main() {
 	})
 
 	// start server
-	server := ui.NewUiServer()
+	server := ui2.NewUiServer()
 	server.Start()
 }
