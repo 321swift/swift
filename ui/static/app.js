@@ -8,38 +8,8 @@ let props = {
 let sendBtn = document.getElementById("sendBtn");
 let receiveBtn = document.getElementById("receiveBtn");
 let statusArea = document.getElementById("status");
-let fileInput = document.getElementById("fileInput");
-console.log(fileInput);
 
 let updateEvent = new Event("update", {});
-
-fileInput.addEventListener("change", (event) => {
-	const reader = new FileReader();
-	let filename = "";
-	reader.addEventListener("load", (event) => {
-		const result = event.target.result;
-		// Do something with result
-		console.log(result);
-		if (props.socket != undefined) {
-			props.fileSocket.send(
-				JSON.stringify({
-					Filename: filename,
-					Data: result,
-				})
-			);
-		}
-	});
-
-	reader.addEventListener("progress", (event) => {
-		if (event.loaded && event.total) {
-			const percent = (event.loaded / event.total) * 100;
-			console.log(`Progress: ${Math.round(percent)}`);
-		}
-	});
-
-	reader.readAsArrayBuffer(event.target.files[0]);
-	filename = event.target.files[0].name;
-});
 
 receiveBtn.onclick = (e) => {
 	if (props.socket != undefined) {
@@ -53,7 +23,6 @@ receiveBtn.onclick = (e) => {
 };
 sendBtn.onclick = (e) => {
 	if (props.socket != undefined) {
-		console.log("sending json");
 		props.socket.send(
 			JSON.stringify({
 				role: "server",
