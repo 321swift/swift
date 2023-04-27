@@ -124,36 +124,44 @@ func (s *Server) readLoop(conn net.Conn) {
 
 func (s *Server) HandleFile(w http.ResponseWriter, r *http.Request) {
 	// upgrade connectin to websocket
-	upgrader := websocket.Upgrader{}
+	upgrader := websocket.Upgrader{
+		ReadBufferSize: 1024,
+	}
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn1, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Error upgrading connection:", err)
 		return
 	}
-	messageType, message, err := conn1.ReadMessage()
-	if err != nil {
-		log.Println("Error reading message:", err)
-	}
-	if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
-		// Create a Message struct and encode it as JSON
-		msg := global.Message{}
-		err = json.Unmarshal(message, &msg)
-		if err != nil {
-			log.Println("Error encoding message:", err)
+
+	go func() {
+		for {
+			messageType, message, err := conn1.ReadMessage()
+			if err != nil {
+				log.Println("Error reading message:", err)
+			}
+
+			if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
+				// Create a Message struct and encode it as JSON
+				msg := global.Message{}
+				err = json.Unmarshal(message, &msg)
+				if err != nil {
+					log.Println("Error encoding message:", err)
+				}
+				jsonMsg, err := json.Marshal(msg)
+				if err != nil {
+					log.Println("Error encoding message:", err)
+				}
+				err = binary.Write(s.client, binary.LittleEndian, int64(len(jsonMsg)))
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				io.CopyN(s.client, bytes.NewReader(jsonMsg), int64(len(jsonMsg)))
+				s.logger.WriteLog(fmt.Sprint("transfer complete: ", len(jsonMsg), "bytes sent"))
+			}
 		}
-		jsonMsg, err := json.Marshal(msg)
-		if err != nil {
-			log.Println("Error encoding message:", err)
-		}
-		err = binary.Write(s.client, binary.LittleEndian, int64(len(jsonMsg)))
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		io.CopyN(s.client, bytes.NewReader(jsonMsg), int64(len(jsonMsg)))
-		s.logger.WriteLog(fmt.Sprint("transfer complete: ", len(jsonMsg), "bytes sent"))
-	}
+	}()
 }
 
 func (s *Server) Send(filePath string) error {
