@@ -1,4 +1,4 @@
-package ui
+package ui2
 
 import (
 	"encoding/json"
@@ -19,7 +19,6 @@ type UiServer struct {
 	socket        *websocket.Conn
 	port          int
 	filePort      int
-	role          string
 	fskt          bool
 	backendServer *server.Server
 }
@@ -45,8 +44,8 @@ func OpenPage(url string) {
 	if err != nil {
 		fmt.Println("Failed to open URL:", err)
 	}
-
 }
+
 func (s *UiServer) StartFileSocket() {
 	fmt.Println("starting uiserver")
 	s.filePort = global.GetAvailablePort(s.port)
@@ -65,9 +64,9 @@ func (s *UiServer) Start() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Handle("/", http.FileServer(http.Dir("./ui")))
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("ui/static"))))
-	r.HandleFunc("/ws", s.HandleWS)
+	r.Handle("/*", http.FileServer(http.Dir("ui2/")))
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("ui2/static"))))
+	r.HandleFunc("/../ws", s.HandleWS)
 	fmt.Printf("Server started on port %d\n", s.port)
 	OpenPage(fmt.Sprintf("http://localhost:%d", s.port))
 	http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
