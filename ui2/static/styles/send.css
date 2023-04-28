@@ -1,5 +1,9 @@
 body {
+<<<<<<< HEAD
 	background-color: #fffefe;
+=======
+	background-color: #fff;
+>>>>>>> eedc2a2 (Style file input area)
 }
 /* Style the navbar */
 .navbar {
@@ -40,10 +44,26 @@ body {
 	margin-top: 60px;
 }
 
+<<<<<<< HEAD
+=======
+#fileInputArea {
+	margin-inline: auto;
+	display: flex;
+	justify-content: center;
+	padding: 1rem 0;
+}
+
+>>>>>>> eedc2a2 (Style file input area)
 .send-img {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
+<<<<<<< HEAD
 	width: 50%;
 	height: 50%;
+=======
+	margin-top: 5rem;
+	width: 30%;
+	height: 30%;
+>>>>>>> eedc2a2 (Style file input area)
 }
