@@ -18,6 +18,6 @@ func NewLogger(socket websocket.Conn) *Logger {
 }
 
 func (l *Logger) Write(logType string, msg any) {
-	l.conn.WriteJSON(fmt.Sprintf(`{"%s": %s}`, logType, fmt.Sprint(msg)))
+	l.conn.WriteJSON(fmt.Sprintf(`{"%s": "%s"}`, logType, fmt.Sprint(msg)))
 	log.Println(msg)
 }
