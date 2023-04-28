@@ -20,7 +20,7 @@ func (s *Server) Broadcast() {
 		}
 		addrs = append(addrs, ip)
 	}
-	s.logger.WriteLog(fmt.Sprintf("Sending broadcast to %v", addrs))
+	s.logger.Write("log", fmt.Sprintf("Sending broadcast to %v", addrs))
 
 	wg.Add(20 * len(addrs))
 	for i := 0; i < 10; i++ {
@@ -32,7 +32,7 @@ func (s *Server) Broadcast() {
 		}
 		time.Sleep(time.Millisecond * 100)
 	}
-	s.logger.WriteLog("Broadcast sent out")
+	s.logger.Write("log", "Broadcast sent out")
 	wg.Wait()
 }
 
