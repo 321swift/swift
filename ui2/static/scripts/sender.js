@@ -3,9 +3,9 @@ let props = {
 	fileSocket: undefined,
 	fileSocketPort: undefined,
 };
-// connect to the websocket
+
 function connectMsgSocket() {
-	if (!window["Websocket"]) {
+	if (!window["WebSocket"]) {
 		alert(
 			"This application uses web sockets in its operations.\
       \nYour browser unfortunately does not support web sockets. \
@@ -14,10 +14,11 @@ function connectMsgSocket() {
 		return;
 	}
 
-	let conn = new Websocket("ws://" + document.location.host + "/ws");
+	let conn = new WebSocket("ws://" + document.location.host + "/ws");
 
 	conn.onopen = function (evt) {
 		props.msgSocket = conn;
+		props.msgSocket.send(JSON.stringify({ role: "server" }));
 	};
 
 	conn.onclose = function (evt) {
@@ -30,7 +31,7 @@ function connectMsgSocket() {
 }
 
 window.onload = function () {
-	connectWebsocket();
+	connectMsgSocket();
 };
 
 function msgHandler(data) {

@@ -66,7 +66,7 @@ func (s *UiServer) Start() {
 
 	r.Handle("/*", http.FileServer(http.Dir("ui2/")))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("ui2/static"))))
-	r.HandleFunc("/../ws", s.HandleWS)
+	r.HandleFunc("/ws", s.HandleWS)
 	fmt.Printf("Server started on port %d\n", s.port)
 	OpenPage(fmt.Sprintf("http://localhost:%d", s.port))
 	http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
@@ -107,7 +107,7 @@ func (s *UiServer) ReadLoop(w http.ResponseWriter) {
 		}
 		switch roleStruct.Role {
 		case "server":
-			s.socket.WriteJSON("assuming server role")
+			s.socket.WriteJSON(`{"status": "assuming server role"}`)
 			s.assumeServer(*s.socket)
 		case "client":
 			s.socket.WriteJSON("assuming client role")

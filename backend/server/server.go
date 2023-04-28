@@ -40,14 +40,14 @@ func NewServer(logger *global.Logger) *Server {
 }
 
 func (s *Server) Shutdown() {
-	defer s.logger.WriteLog("Server stopped")
+	defer s.logger.Write("status", "Server stopped")
 	s.listener.Close()
 	if s.client != nil {
 		err := s.client.Close()
 		if err != nil {
 			return
 		} else {
-			s.logger.WriteLog(fmt.Sprint("unable to close connection: ", err))
+			s.logger.Write("log", fmt.Sprint("unable to close connection: ", err))
 			return
 		}
 	}
@@ -59,7 +59,7 @@ func (s *Server) Start() {
 	}()
 
 	s.timer = time.AfterFunc(s.serverTimeout, func() {
-		s.logger.WriteLog("Server timeout... shutting down")
+		s.logger.Write("status", "Server timeout... shutting down")
 		s.Shutdown()
 	})
 
@@ -73,11 +73,11 @@ func (s *Server) Start() {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
-			s.logger.WriteLog(fmt.Sprint("accepting connection err: ", err))
+			s.logger.Write("log", fmt.Sprint("accepting connection err: ", err))
 			break
 		}
 		s.timer.Stop()
-		s.logger.WriteLog(fmt.Sprint("Connection made: ", conn))
+		s.logger.Write("status", fmt.Sprint("Connection made: ", conn.RemoteAddr().String()))
 		s.client = conn
 		go s.readLoop(conn)
 	}
@@ -157,7 +157,7 @@ func (s *Server) HandleFile(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				io.CopyN(s.client, bytes.NewReader(jsonMsg), int64(len(jsonMsg)))
-				s.logger.WriteLog(fmt.Sprint("transfer complete: ", len(jsonMsg), "bytes sent"))
+				s.logger.Write("log", fmt.Sprint("transfer complete: ", len(jsonMsg), "bytes sent"))
 			}
 		}
 	}()
@@ -167,7 +167,7 @@ func (s *Server) Send(filePath string) error {
 	fmt.Println("sending")
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		s.logger.WriteLog(err)
+		s.logger.Write("log", err)
 		return err
 	}
 
@@ -179,17 +179,17 @@ func (s *Server) Send(filePath string) error {
 	go func() {
 		err = binary.Write(s.client, binary.LittleEndian, int64(len(data)))
 		if err != nil {
-			s.logger.WriteLog(err)
+			s.logger.Write("log", err)
 			return
 		}
 
 		// send data
 		i, err := io.CopyN(s.client, bytes.NewReader(data), int64(len(data)))
 		if err != nil {
-			s.logger.WriteLog(err)
+			s.logger.Write("log", err)
 			return
 		}
-		s.logger.WriteLog(fmt.Sprintf("File sent successfully: %d / %d bytes written", i, len(data)))
+		s.logger.Write("status", fmt.Sprintf("File sent successfully: %d / %d bytes written", i, len(data)))
 	}()
 
 	return nil

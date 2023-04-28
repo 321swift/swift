@@ -152,7 +152,7 @@ func (c *Client) HandleFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		io.CopyN(c.conn, bytes.NewReader(jsonMsg), int64(len(jsonMsg)))
-		c.logger.WriteLog(fmt.Sprint("transfer complete: ", len(jsonMsg), "bytes sent"))
+		c.logger.Write("log", fmt.Sprint("transfer complete: ", len(jsonMsg), "bytes sent"))
 	}
 }
 func (c *Client) Send(filePath string) error {
