@@ -15,7 +15,9 @@
 			rel="stylesheet"
 			href="./static/styles/send.css" />
 		<title>Document</title>
-		<script src="./static/scripts/sender.js"></script>
+		<script
+			src="./static/scripts/sender.js"
+			defer></script>
 	</head>
 	<body>
 		<div class="navbar">
@@ -25,7 +27,9 @@
 				<a href="doc.html">Docs</a>
 			</div>
 		</div>
-		<h2 class="send-text">
+		<h2
+			class="send-text"
+			id="statusArea">
 			<span
 				>We're almost there! Just a moment while we find a device for you to transfer
 				files to.</span
@@ -33,6 +37,7 @@
 			<br />
 			<span>Please ensure that you are on the same WIFI network as the other device</span>
 		</h2>
+		<div id="fileInputArea"></div>
 		<img
 			src="./static/images/send.svg"
 			class="send-img" />
