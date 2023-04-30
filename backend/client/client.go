@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"swift2/global"
 	"time"
 
@@ -108,33 +108,25 @@ func (c *Client) readLoop(conn net.Conn) {
 		}
 		log.Printf("Received %d bytes from %v", i, conn.RemoteAddr())
 
-		// Decode the JSON-encoded message and extract the filename and data
-		type Message struct {
-			Filename string           `json:"Filename"`
-			Data     goja.ArrayBuffer `json:"Data"`
-		}
-		var msg = Message{
-			Filename: "",
-			// Data:     (*goja.Runtime).NewArrayBuffer([]byte),
-		}
-		err = json.Unmarshal(data.Bytes(), &msg)
-		if err != nil {
-			log.Println("Error decoding message:", err)
-			break
-		}
+		// var msg = global.Message{}
+		// err = json.Unmarshal(data.Bytes(), &msg)
+		// if err != nil {
+		// 	log.Println("Error decoding message:", err)
+		// 	break
+		// }
 
-		dir, err := createDirectoryIfNotExists("Documents/swiftReceived")
+		dir, err := global.CreateDirectoryIfNotExists("Documents/swiftReceived")
 		if err != nil {
 			log.Println(err)
 
-			err = os.WriteFile(msg.Filename, msg.Data.Bytes(), 0744)
+			err = os.WriteFile("tempfilename", data.Bytes(), 0744)
 			if err != nil {
 				log.Println("Error writing file:", err)
 				break
 			}
 		}
 		// Write the data to a file with the given filename
-		err = os.WriteFile(path.Join(dir, msg.Filename), msg.Data.Bytes(), 0744)
+		err = os.WriteFile(path.Join(dir, "tempfile.txt"), data.Bytes(), 0744)
 		if err != nil {
 			log.Println("Error writing file:", err)
 			break
@@ -242,22 +234,4 @@ func (c *Client) Disconnect() error {
 		log.Println(err)
 	}
 	return err
-}
-func createDirectoryIfNotExists(dirName string) (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	dirPath := filepath.Join(homeDir, dirName)
-
-	_, err = os.Stat(dirPath)
-	if os.IsNotExist(err) {
-		err = os.Mkdir(dirPath, 0755)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return dirPath, nil
 }

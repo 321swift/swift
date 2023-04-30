@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -103,20 +102,8 @@ func (s *Server) readLoop(conn net.Conn) {
 		}
 		log.Printf("Received %d bytes from %v", i, conn.RemoteAddr())
 
-		// Decode the JSON-encoded message and extract the filename and data
-		var msg global.Message
-		err = json.Unmarshal(data.Bytes(), &msg)
-		if err != nil {
-			log.Println("Error decoding message:", err)
-			break
-		}
+		// // Decode the JSON-en
 
-		// Write the data to a file with the given filename
-		err = os.WriteFile(msg.Filename, msg.Data, 0644)
-		if err != nil {
-			log.Println("Error writing file:", err)
-			break
-		}
 	}
 
 }
@@ -135,30 +122,28 @@ func (s *Server) HandleFile(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		for {
-			messageType, message, err := conn1.ReadMessage()
+			_, message, err := conn1.ReadMessage()
 			if err != nil {
 				log.Println("Error reading message:", err)
 			}
 
-			if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
-				// Create a Message struct and encode it as JSON
-				msg := global.Message{}
-				err = json.Unmarshal(message, &msg)
+			dir, err := global.CreateDirectoryIfNotExists("Documents/swiftReceived")
+			if err != nil {
+				log.Println(err)
+
+				err = os.WriteFile("tempfilename", message, 0744)
 				if err != nil {
-					log.Println("Error encoding message:", err)
+					log.Println("Error writing file:", err)
+					break
 				}
-				jsonMsg, err := json.Marshal(msg)
-				if err != nil {
-					log.Println("Error encoding message:", err)
-				}
-				err = binary.Write(s.client, binary.LittleEndian, int64(len(jsonMsg)))
-				if err != nil {
-					log.Println(err)
-					return
-				}
-				io.CopyN(s.client, bytes.NewReader(jsonMsg), int64(len(jsonMsg)))
-				s.logger.Write("log", fmt.Sprint("transfer complete: ", len(jsonMsg), "bytes sent"))
 			}
+			// Write the data to a file with the given filename
+			err = os.WriteFile(path.Join(dir, "tempfile.jpg"), message, 0744)
+			if err != nil {
+				log.Println("Error writing file:", err)
+				break
+			}
+
 		}
 	}()
 }
