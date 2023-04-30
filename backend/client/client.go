@@ -37,17 +37,17 @@ type Host struct {
 	ipPort   string
 }
 
-func (c *Client) Listen() {
+func (c *Client) Listen() (hostName string, address string, err error) {
 	// Resolve the broadcast address and port
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", global.BroadcastPort))
 	if err != nil {
-		return
+		return "", "", err
 	}
 
 	// Create a UDP socket to listen on
 	conn, err := net.ListenUDP("udp", addr)
 	if err != nil {
-		return
+		return "", "", err
 	}
 	defer conn.Close()
 
@@ -59,15 +59,20 @@ func (c *Client) Listen() {
 	// Wait for a message
 	stopTime := time.Now().Add(time.Second * 7)
 	for time.Now().Before(stopTime) {
-		buffer := new(bytes.Buffer)
-		_, _, err := conn.ReadFromUDP(buffer.Bytes())
-		// fmt.Println("broadcast received: ", n, remoteAddr, buffer.String())
+		buffer := make([]byte, 40)
+		n, remoteAddr, err := conn.ReadFromUDP(buffer)
 		// c.AvailableHosts = append(c.AvailableHosts, Host{hostname: "", ipPort: })
 		if err != nil {
-			return
+			return "", "", err
 		}
+		// fmt.Println("broadcast received: ", n, remoteAddr.String(), string(buffer[:n]))
+		msg := strings.Split(string(buffer[:n]), ":")
+		address = fmt.Sprintf("%s:%s", strings.Split(remoteAddr.String(), ":")[0], msg[1])
+		hostName = msg[0]
+		return hostName, address, nil
 	}
 
+	return hostName, address, nil
 }
 
 func (c *Client) Connect(address string) {
@@ -85,7 +90,6 @@ func (c *Client) Connect(address string) {
 }
 
 func (c *Client) readLoop(conn net.Conn) {
-	log.Println("Receiving file from connection")
 
 	for {
 
@@ -105,15 +109,32 @@ func (c *Client) readLoop(conn net.Conn) {
 		log.Printf("Received %d bytes from %v", i, conn.RemoteAddr())
 
 		// Decode the JSON-encoded message and extract the filename and data
-		var msg global.Message
+		type Message struct {
+			Filename string           `json:"Filename"`
+			Data     goja.ArrayBuffer `json:"Data"`
+		}
+		var msg = Message{
+			Filename: "",
+			// Data:     (*goja.Runtime).NewArrayBuffer([]byte),
+		}
 		err = json.Unmarshal(data.Bytes(), &msg)
 		if err != nil {
 			log.Println("Error decoding message:", err)
 			break
 		}
 
+		dir, err := createDirectoryIfNotExists("Documents/swiftReceived")
+		if err != nil {
+			log.Println(err)
+
+			err = os.WriteFile(msg.Filename, msg.Data.Bytes(), 0744)
+			if err != nil {
+				log.Println("Error writing file:", err)
+				break
+			}
+		}
 		// Write the data to a file with the given filename
-		err = ioutil.WriteFile(msg.Filename, msg.Data, 0644)
+		err = os.WriteFile(path.Join(dir, msg.Filename), msg.Data.Bytes(), 0744)
 		if err != nil {
 			log.Println("Error writing file:", err)
 			break
@@ -221,4 +242,22 @@ func (c *Client) Disconnect() error {
 		log.Println(err)
 	}
 	return err
+}
+func createDirectoryIfNotExists(dirName string) (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	dirPath := filepath.Join(homeDir, dirName)
+
+	_, err = os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		err = os.Mkdir(dirPath, 0755)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return dirPath, nil
 }
