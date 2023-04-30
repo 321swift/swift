@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"path/filepath"
 )
 
 const (
@@ -24,6 +26,25 @@ func GetAvailablePort(desiredPort int) int {
 		desiredPort++
 
 	}
+}
+
+func CreateDirectoryIfNotExists(dirName string) (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	dirPath := filepath.Join(homeDir, dirName)
+
+	_, err = os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		err = os.Mkdir(dirPath, 0755)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return dirPath, nil
 }
 
 type Message struct {

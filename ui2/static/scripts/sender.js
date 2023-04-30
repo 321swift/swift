@@ -66,7 +66,7 @@ window.onload = function () {
 	window.addEventListener("enqueue", (event) => {
 		while (!props.fileQueue.isEmpty()) {
 			if (props.fileSocket != undefined) {
-				props.fileSocket.send(JSON.stringify(props.fileQueue.dequeue()));
+				props.fileSocket.send(props.fileQueue.dequeue());
 			}
 		}
 	});
@@ -148,13 +148,14 @@ function readFile(file) {
 	return new Promise((resolve, reject) => {
 		let fr = new FileReader();
 		fr.onload = (event) => {
-			props.fileQueue.enqueue({
-				Filename: file.name,
-				Data: event.target.result,
-			});
+			// props.fileQueue.enqueue({
+			// 	Filename: file.name,
+			// 	Data: event.target.result,
+			// });
+			props.fileQueue.enqueue(event.target.result);
 			resolve();
 		};
-		fr.readAsBinaryString(file);
+		fr.readAsArrayBuffer(file);
 	});
 }
 
