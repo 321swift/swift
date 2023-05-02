@@ -1,4 +1,4 @@
-module swift2
+module swift
 
 go 1.20
 
