@@ -1,0 +1,131 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-size: 16px;
+	color: #333333;
+}
+
+.hero-container {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	height: 95vh;
+	padding: 3rem calc((100vw - 1300px) / 2);
+	background-color: #e0dede;
+}
+
+.column-left {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	padding: 0rem 2rem;
+}
+
+.column-left p {
+	margin-bottom: 2rem;
+	font-size: 1.4rem;
+	line-height: 150%;
+	font-weight: 500;
+}
+
+.column-right {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.welcome {
+	font-size: 2rem;
+	margin-left: 40%;
+	animation-name: welcomeAnimation;
+	animation-duration: 6s;
+	animation-iteration-count: infinite;
+}
+
+@keyframes welcomeAnimation {
+	0% {
+		transform: translateX(-50px);
+		opacity: 0;
+	}
+	50% {
+		transform: translateX(0px);
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(50px);
+		opacity: 0;
+	}
+}
+
+.swift {
+	font-size: 10rem;
+	font-weight: 700;
+	font-family: "Tangerine", cursive;
+}
+
+.hero-image {
+	width: 473px;
+	height: 268px;
+	margin-bottom: 1rem;
+}
+
+.btt {
+	display: flex;
+	justify-content: space-between;
+	width: 433px;
+	margin-left: -2rem;
+}
+button {
+	min-width: 7em;
+	text-align: center;
+	background-color: white;
+	font-family: inherit;
+	font-size: 1.4rem;
+	font-weight: 700;
+	border: none;
+	border-radius: 0.3rem;
+	padding: 0.6em 2em;
+}
+
+.btn1,
+.btn2 {
+	display: inline-block;
+}
+
+button:hover {
+	background-color: #6c63ff;
+	color: white;
+	cursor: pointer;
+}
+
+@media screen and (max-width: 1000px) {
+	.hero-container {
+		grid-template-columns: 1fr;
+	}
+
+	.btn1,
+	.btn2 {
+		display: inline-block;
+		border-radius: 10px;
+		padding: 5px 10px;
+		margin-right: 5px;
+		background-color: #fafafa;
+		color: #000000;
+		font-size: 18px;
+		border: none;
+		text-align: center;
+		text-decoration: none;
+	}
+
+	button {
+		width: 150px;
+		height: 50px;
+		text-align: center;
+		background-color: white;
+		border: none;
+	}
+}
