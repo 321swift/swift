@@ -13,7 +13,7 @@ body {
 	grid-template-columns: 1fr 1fr;
 	height: 95vh;
 	padding: 3rem calc((100vw - 1300px) / 2);
-	background-color: #e0dede;
+	background-color: hsl(0, 0%, 81%);
 }
 
 .column-left {
