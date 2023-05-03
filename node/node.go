@@ -210,7 +210,6 @@ func (n *Node) handleReceiverRole(w http.ResponseWriter, r *http.Request) {
 	for i := range n.connectionPool {
 		keys = append(keys, i)
 	}
-	time.Sleep(time.Second)
 	response := Intro{
 		Hostname: n.hostname,
 		Conns:    keys,
