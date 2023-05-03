@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os/exec"
 	"runtime"
-	"swift2/backend/server"
-	"swift2/global"
+	"swift/backend/server"
+	"swift/global"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"

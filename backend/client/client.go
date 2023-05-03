@@ -13,7 +13,7 @@ import (
 	"os"
 	"path"
 	"strings"
-	"swift2/global"
+	"swift/global"
 	"time"
 
 	"github.com/gorilla/websocket"
