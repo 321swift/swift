@@ -2,7 +2,7 @@ package node
 
 import (
 	"bytes"
-	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -30,8 +30,8 @@ type Node struct {
 	backendConnection net.Conn
 }
 type Intro struct {
-	hostname string
-	conns    []int
+	Hostname string
+	Conns    []int
 }
 
 func NewNode(infoLog *log.Logger, errLog *log.Logger) *Node {
@@ -51,25 +51,25 @@ func NewNode(infoLog *log.Logger, errLog *log.Logger) *Node {
 }
 
 func (n *Node) Start() {
-	// // setup connection pool
-	// for i := 0; i < 5; i++ {
-	// 	port := n.getAvailablePort()
-	// 	n.connectionPool[port] = nil
-	// 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	// 	if err != nil {
-	// 		n.errLog.Println(err)
-	// 		return
-	// 	}
-	// 	n.connectionPool[port] = listener
-	// 	go func() {
-	// 		fileRouter := chi.NewRouter()
-	// 		fileRouter.Use(middleware.Logger)
-	// 		fileRouter.HandleFunc("/file", n.handleFileReception)
+	// setup connection pool
+	for i := 0; i < 5; i++ {
+		port := n.getAvailablePort()
+		n.connectionPool[port] = nil
+		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+		if err != nil {
+			n.errLog.Println(err)
+			return
+		}
+		n.connectionPool[port] = listener
+		go func() {
+			fileRouter := chi.NewRouter()
+			fileRouter.Use(middleware.Logger)
+			fileRouter.HandleFunc("/file", n.handleFileReception)
 
-	// 		http.Serve(listener, fileRouter)
-	// 	}()
-	// }
-	// fmt.Printf("%+v\n", n.connectionPool)
+			http.Serve(listener, fileRouter)
+		}()
+	}
+	fmt.Printf("%+v\n", n.connectionPool)
 
 	// begin UI server
 	func() {
@@ -133,81 +133,35 @@ func (n *Node) handleSenderRole(w http.ResponseWriter, r *http.Request) {
 	timer.Stop()
 
 	if n.backendConnection != nil {
-		n.senderIntroduce()
-		n.ReadLoop(n.backendConnection)()
+		// Send an introduction message back
+		keys := make([]int, 0)
+		for i := range n.connectionPool {
+			keys = append(keys, i)
+		}
+		response := Intro{
+			Hostname: n.hostname,
+			Conns:    keys,
+		}
+		err = json.NewEncoder(n.backendConnection).Encode(&response)
+		if err != nil {
+			fmt.Println("Error sending intro message:", err)
+			os.Exit(1)
+		}
+
+		// Receive the introduction message
+		var intro Intro
+		err = json.NewDecoder(n.backendConnection).Decode(&intro)
+		if err != nil {
+			fmt.Println("Error receiving intro message:", err)
+			os.Exit(1)
+		}
+
+		n.infoLog.Printf("Received intro message from %s with numbers %v\n", intro.Hostname, intro.Conns)
+		n.uiSocket.WriteJSON(intro)
+		go n.ReadLoop(n.backendConnection)()
 	} else {
 		n.uiSocket.WriteJSON(`{"status":"server timed out; no connections made"}`)
 	}
-}
-
-func (n *Node) senderIntroduce() {
-	// extract ports of connection pool
-	keys := make([]int, 0)
-	for i := range n.connectionPool {
-		keys = append(keys, i)
-	}
-
-	// send intro
-	intro := Intro{
-		hostname: n.hostname,
-		conns:    keys,
-	}
-	bin_buf := new(bytes.Buffer)
-	gobObj := gob.NewEncoder(bin_buf)
-	gobObj.Encode(intro)
-	_, err := n.backendConnection.Write(bin_buf.Bytes())
-	if err != nil {
-		n.errLog.Println(err)
-		return
-	}
-
-	// read intro
-	tmp := make([]byte, 500)
-	_, err = n.backendConnection.Read(tmp)
-	if err != nil {
-		n.errLog.Println(err)
-	}
-
-	tmpbuff := bytes.NewBuffer(tmp)
-	receivedIntro := new(Intro)
-
-	gobDec := gob.NewDecoder(tmpbuff)
-
-	gobDec.Decode(receivedIntro)
-	n.infoLog.Println(receivedIntro)
-}
-
-func (n *Node) receiverIntroduce() {
-
-	keys := make([]int, 0)
-	for i := range n.connectionPool {
-		keys = append(keys, i)
-	}
-
-	// read intro
-	tmp := make([]byte, 500)
-	_, err := n.backendConnection.Read(tmp)
-	if err != nil {
-		n.errLog.Println(err)
-	}
-
-	tmpbuff := bytes.NewBuffer(tmp)
-	receivedIntro := new(Intro)
-
-	gobDec := gob.NewDecoder(tmpbuff)
-	gobDec.Decode(receivedIntro)
-
-	// send intro
-	intro := Intro{
-		hostname: n.hostname,
-		conns:    keys,
-	}
-	bin_buf := new(bytes.Buffer)
-	gobObj := gob.NewEncoder(bin_buf)
-	gobObj.Encode(intro)
-	n.backendConnection.Write(bin_buf.Bytes())
-
-	n.infoLog.Println(receivedIntro)
 }
 
 func (n *Node) handleReceiverRole(w http.ResponseWriter, r *http.Request) {
@@ -241,8 +195,35 @@ func (n *Node) handleReceiverRole(w http.ResponseWriter, r *http.Request) {
 		n.errLog.Println(err)
 		return
 	}
-	n.receiverIntroduce()
+	// n.receiverIntroduce()
+	// Receive the introduction message
+	var intro Intro
+	err = json.NewDecoder(n.backendConnection).Decode(&intro)
+	if err != nil {
+		fmt.Println("Error receiving intro message:", err)
+		os.Exit(1)
+	}
 
+	// Send an introduction message back
+	// extract ports of connection pool
+	keys := make([]int, 0)
+	for i := range n.connectionPool {
+		keys = append(keys, i)
+	}
+	time.Sleep(time.Second)
+	response := Intro{
+		Hostname: n.hostname,
+		Conns:    keys,
+	}
+	err = json.NewEncoder(n.backendConnection).Encode(&response)
+	if err != nil {
+		fmt.Println("Error sending intro message:", err)
+		os.Exit(1)
+	}
+	n.infoLog.Printf("Received intro message from %s with numbers %v\n", intro.Hostname, intro.Conns)
+	n.uiSocket.WriteJSON(intro)
+
+	go n.ReadLoop(n.backendConnection)()
 }
 
 func (n *Node) Listen() (string, error) {
