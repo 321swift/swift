@@ -291,7 +291,9 @@ func (n *Node) ReadLoop(conn interface{}) func() {
 					break
 				}
 
-				n.infoLog.Println(readBytes.String())
+				if readBytes.String() != "" {
+					n.infoLog.Println(readBytes.String())
+				}
 			}
 
 		}
