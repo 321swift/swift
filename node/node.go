@@ -51,25 +51,25 @@ func NewNode(infoLog *log.Logger, errLog *log.Logger) *Node {
 }
 
 func (n *Node) Start() {
-	// setup connection pool
-	for i := 0; i < 5; i++ {
-		port := n.getAvailablePort()
-		n.connectionPool[port] = nil
-		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-		if err != nil {
-			n.errLog.Println(err)
-			return
-		}
-		n.connectionPool[port] = listener
-		go func() {
-			fileRouter := chi.NewRouter()
-			fileRouter.Use(middleware.Logger)
-			fileRouter.HandleFunc("/file", n.handleFileReception)
+	// // setup connection pool
+	// for i := 0; i < 5; i++ {
+	// 	port := n.getAvailablePort()
+	// 	n.connectionPool[port] = nil
+	// 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	// 	if err != nil {
+	// 		n.errLog.Println(err)
+	// 		return
+	// 	}
+	// 	n.connectionPool[port] = listener
+	// 	go func() {
+	// 		fileRouter := chi.NewRouter()
+	// 		fileRouter.Use(middleware.Logger)
+	// 		fileRouter.HandleFunc("/file", n.handleFileReception)
 
-			http.Serve(listener, fileRouter)
-		}()
-	}
-	fmt.Printf("%+v\n", n.connectionPool)
+	// 		http.Serve(listener, fileRouter)
+	// 	}()
+	// }
+	// fmt.Printf("%+v\n", n.connectionPool)
 
 	// begin UI server
 	func() {
