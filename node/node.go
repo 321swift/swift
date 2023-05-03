@@ -268,7 +268,7 @@ func (n *Node) Listen() (string, error) {
 	availableHost := ""
 	for time.Now().Before(stopTime) {
 		buffer := make([]byte, 40)
-		_, remoteAddr, err := conn.ReadFromUDP(buffer)
+		l, remoteAddr, err := conn.ReadFromUDP(buffer)
 		// c.AvailableHosts = append(c.AvailableHosts, Host{hostname: "", ipPort: })
 		if err != nil {
 			return "", err
@@ -277,7 +277,7 @@ func (n *Node) Listen() (string, error) {
 		n.infoLog.Println("broadcast received: ", remoteAddr.String(), string(buffer))
 		availableHost = fmt.Sprintf("%s:%s",
 			strings.Split(remoteAddr.String(), ":")[0],
-			strings.Split(string(buffer), ":")[1],
+			strings.Split(string(buffer[:l]), ":")[1],
 		)
 		if availableHost != "" {
 			break
