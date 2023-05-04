@@ -12,6 +12,7 @@ class Queue {
 		this.queue.push(item);
 	}
 
+	// isEmpty returns true if the queue is empty or false if not
 	isEmpty() {
 		return this.queue.length == 0;
 	}
@@ -44,15 +45,15 @@ class connectionPool {
 		return available;
 	}
 
+	hasAvailable() {
+		return !this.availableConns.isEmpty();
+	}
+
 	done(port) {
 		this.connsInUse.set(port, false);
 		this.availableConns.enqueue(port);
 	}
 }
-
-const fileSentEvent = new Event("fileSent");
-let pool = new connectionPool([]);
-let props = new Map();
 
 class fileHandler {
 	static fileQueue = new Queue();
@@ -80,8 +81,8 @@ class fileHandler {
 			return;
 		}
 
-		fr = new FileReader();
-		this.fr.onload = (e) => {
+		const fr = new FileReader();
+		fr.onload = (e) => {
 			const content = e.target.result;
 			// chunk up file
 			const CHUNK_SIZE = 1000;
@@ -105,3 +106,19 @@ class fileHandler {
 		fr.readAsArrayBuffer(this.file);
 	}
 }
+
+window.addEventListener("fileSent", (e) => {
+	// clear out filehandler.filequeue
+	while (!fileHandler.fileQueue.isEmpty()) {
+		if (pool.hasAvailable()) {
+			fh = fileHandler.fileQueue.dequeue();
+			fh.send();
+		} else {
+			break;
+		}
+	}
+});
+
+const fileSentEvent = new Event("fileSent");
+const pool = new connectionPool([1]);
+const props = new Map();
