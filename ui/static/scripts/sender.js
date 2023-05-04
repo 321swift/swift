@@ -60,6 +60,7 @@ class fileHandler {
 
 	constructor(file) {
 		this.file = file;
+		this.progressBar = null;
 	}
 
 	openConnection(port, chunkSize, chunkCount, filename) {
@@ -91,6 +92,12 @@ class fileHandler {
 			conn = this.openConnection(port, CHUNK_SIZE, chunkCount, this.file.name);
 
 			// loop over each chunk
+
+			/* 
+				call 
+				update({uiPortion: "progress", content: this.progressBar})
+				to insert progress bar
+			*/
 			for (let chunk = 0; chunk < totalChunks + 1; chunk++) {
 				let CHUNK = content.slice(chunk * CHUNK_SIZE, (chunk + 1) * CHUNK_SIZE);
 				conn.send(CHUNK);
@@ -122,3 +129,42 @@ window.addEventListener("fileSent", (e) => {
 const fileSentEvent = new Event("fileSent");
 const pool = new connectionPool([1]);
 const props = new Map();
+
+props.set("uiTitle", document.getElementById("uiTitle"));
+props.set("progressArea", document.getElementById("progressArea"));
+
+// // connect to sender socket
+// backendSocket = new WebSocket("ws://" + document.location.host + "/sender");
+// backendSocket.onmessage = function (evt) {
+// 	console.log(JSON.parse(evt.data));
+// };
+
+/* 
+const update = {
+	uiPortion: null,
+	content: null
+} 
+*/
+function update(update) {
+	switch (update.uiPortion) {
+		case "title":
+			let updatedContent = document.createElement("span");
+			updatedContent.innerText = update.content;
+			props.get("uiTitle").innerHtml = updatedContent;
+			break;
+		case "progress":
+			props.get("progressArea").appendChild(update.content);
+			break;
+		case "notify-ok":
+			// insert notification to document
+			break;
+		case "notify-success":
+			// insert notification to document
+			break;
+		case "notify-err":
+			// insert notification to document
+			break;
+		default:
+			break;
+	}
+}
