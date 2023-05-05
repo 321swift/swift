@@ -2,7 +2,6 @@ package node
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -29,9 +28,15 @@ type Node struct {
 	hostname          string
 	backendConnection net.Conn
 }
+
+type Status struct {
+	Status string `json:"status"`
+}
 type Intro struct {
-	Hostname string
-	Conns    []int
+	Status          string `json:"status"`
+	Hostname        string `json:"hostname"`
+	Conns           []int  `json:"connectionPool"`
+	ConnectedNodeIP string `json:"connectedIP"`
 }
 
 func NewNode(infoLog *log.Logger, errLog *log.Logger) *Node {
@@ -103,7 +108,11 @@ func (n *Node) handleSenderRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	n.uiSocket = conn
-	conn.WriteJSON(`{"status": "sender"}`)
+	conn.WriteJSON(struct {
+		Status string `json:"status"`
+	}{
+		Status: "sender",
+	})
 	n.infoLog.Println(`{"status": "sender"}`)
 
 	go n.ReadLoop(n.uiSocket)()
@@ -133,34 +142,19 @@ func (n *Node) handleSenderRole(w http.ResponseWriter, r *http.Request) {
 	timer.Stop()
 
 	if n.backendConnection != nil {
-		// Send an introduction message back
-		keys := make([]int, 0)
-		for i := range n.connectionPool {
-			keys = append(keys, i)
-		}
-		response := Intro{
-			Hostname: n.hostname,
-			Conns:    keys,
-		}
-		err = json.NewEncoder(n.backendConnection).Encode(&response)
-		if err != nil {
-			fmt.Println("Error sending intro message:", err)
-			os.Exit(1)
-		}
+		// Send an introduction message
+		n.sendIntroduction()
 
-		// Receive the introduction message
-		var intro Intro
-		err = json.NewDecoder(n.backendConnection).Decode(&intro)
+		intro, err := n.receiveIntroduction()
 		if err != nil {
-			fmt.Println("Error receiving intro message:", err)
-			os.Exit(1)
+			n.errLog.Println(err)
+			return
 		}
-
 		n.infoLog.Printf("Received intro message from %s with numbers %v\n", intro.Hostname, intro.Conns)
 		n.uiSocket.WriteJSON(intro)
 		go n.ReadLoop(n.backendConnection)()
 	} else {
-		n.uiSocket.WriteJSON(`{"status":"server timed out; no connections made"}`)
+		n.uiSocket.WriteJSON(Status{Status: "server timed out; no connections made"})
 	}
 }
 
@@ -179,7 +173,9 @@ func (n *Node) handleReceiverRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	n.uiSocket = conn
-	conn.WriteJSON(`{"status": "receiver"}`)
+	conn.WriteJSON(Status{
+		Status: "receiver",
+	})
 	n.infoLog.Println(`{"status": "receiver"}`)
 
 	go n.ReadLoop(n.uiSocket)()
@@ -195,30 +191,13 @@ func (n *Node) handleReceiverRole(w http.ResponseWriter, r *http.Request) {
 		n.errLog.Println(err)
 		return
 	}
-	// n.receiverIntroduce()
-	// Receive the introduction message
-	var intro Intro
-	err = json.NewDecoder(n.backendConnection).Decode(&intro)
-	if err != nil {
-		fmt.Println("Error receiving intro message:", err)
-		os.Exit(1)
-	}
 
-	// Send an introduction message back
-	// extract ports of connection pool
-	keys := make([]int, 0)
-	for i := range n.connectionPool {
-		keys = append(keys, i)
-	}
-	response := Intro{
-		Hostname: n.hostname,
-		Conns:    keys,
-	}
-	err = json.NewEncoder(n.backendConnection).Encode(&response)
+	intro, err := n.receiveIntroduction()
 	if err != nil {
-		fmt.Println("Error sending intro message:", err)
-		os.Exit(1)
+		n.errLog.Println(err)
+		return
 	}
+	n.sendIntroduction()
 	n.infoLog.Printf("Received intro message from %s with numbers %v\n", intro.Hostname, intro.Conns)
 	n.uiSocket.WriteJSON(intro)
 

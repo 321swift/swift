@@ -1,6 +1,7 @@
 package node
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -184,4 +185,32 @@ func extractIPV4Address(iface net.Interface) *net.IPNet {
 		}
 	}
 	return nil
+}
+
+func (n *Node) sendIntroduction() error {
+	keys := make([]int, 0)
+	for i := range n.connectionPool {
+		keys = append(keys, i)
+	}
+	response := Intro{
+		Hostname: n.hostname,
+		Conns:    keys,
+	}
+	err := json.NewEncoder(n.backendConnection).Encode(&response)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (n *Node) receiveIntroduction() (Intro, error) {
+	// Receive the introduction message
+	var intro Intro
+	err := json.NewDecoder(n.backendConnection).Decode(&intro)
+	if err != nil {
+		return Intro{}, err
+	}
+	intro.Status = "connected"
+	intro.ConnectedNodeIP = strings.Split(n.backendConnection.RemoteAddr().String(), ":")[0]
+
+	return intro, nil
 }
