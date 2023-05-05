@@ -133,12 +133,6 @@ const props = new Map();
 props.set("uiTitle", document.getElementById("uiTitle"));
 props.set("progressArea", document.getElementById("progressArea"));
 
-// // connect to sender socket
-// backendSocket = new WebSocket("ws://" + document.location.host + "/sender");
-// backendSocket.onmessage = function (evt) {
-// 	console.log(JSON.parse(evt.data));
-// };
-
 /* 
 const update = {
 	uiPortion: null,
@@ -168,3 +162,9 @@ function update(update) {
 			break;
 	}
 }
+
+// connect to sender socket
+backendSocket = new WebSocket("ws://" + document.location.host + "/sender");
+backendSocket.onmessage = function (evt) {
+	console.log(JSON.parse(evt.data));
+};
