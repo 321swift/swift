@@ -180,7 +180,8 @@ func extractIPV4Address(iface net.Interface) *net.IPNet {
 	}
 	for _, addr := range addrs {
 		ipnet, ok := addr.(*net.IPNet)
-		if ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
+		//  && !ipnet.IP.IsLoopback()
+		if ok && ipnet.IP.To4() != nil {
 			return ipnet
 		}
 	}
