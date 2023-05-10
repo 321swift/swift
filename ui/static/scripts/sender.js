@@ -96,12 +96,15 @@ class fileHandler {
 
   openConnection(port, chunkSize, chunkCount, filename) {
     // format == ws://ip:port/{chunkSize}-{chunkCount}-{filename}
-    connectionString = `ws://${props.get(
-      "connectedNodeIP"
+    if (!props.has("connectedNodeIp")) return null;
+    const connectionString = `ws://${props.get(
+      "connectedNodeIp"
     )}:${port}/${chunkSize}-${chunkCount}-${filename}`;
 
     let conn = new WebSocket(connectionString);
-    return conn;
+    console.log(conn);
+    if (!!conn) return conn;
+    else return null;
   }
 
   send() {
@@ -133,17 +136,25 @@ class fileHandler {
       const CHUNK_SIZE = 1000;
       const totalChunks = content.byteLength / CHUNK_SIZE;
 
-      conn = this.openConnection(port, CHUNK_SIZE, chunkCount, this.file.name);
+      const conn = this.openConnection(port, CHUNK_SIZE, totalChunks, this.file.name);
+
+      if (!conn.readyState) {
+        console.log("unable to oepn file socket");
+        props.get("connectionPool").done(port);
+        return;
+      }
 
       /* 
 				insert progress bar
 			*/
-      uiUpdate({ uiPortion: "progress", content: this.progressBar });
+      // uiUpdate({ uiPortion: "progress", content: this.progressBar.progressBar });
+
       //send fileChunks
       const writtenChunks = 0;
       for (let chunk = 0; chunk < totalChunks + 1; chunk++) {
         let CHUNK = content.slice(chunk * CHUNK_SIZE, (chunk + 1) * CHUNK_SIZE);
         conn.send(CHUNK);
+
         // update progressbar
         writtenChunks += CHUNK.byteLength;
         this.progressBar.update(`${(100 * writtenChunks) / content.byteLength}%`);
@@ -188,14 +199,8 @@ function uiUpdate(update) {
     case "title":
       let updatedContent = document.createElement("p");
       updatedContent.innerHTML = update.content;
-
-      let fileInput = document.createElement("input");
-      fileInput.setAttribute("type", "file");
-      fileInput.setAttribute("multiple", true);
-
       props.get("uiTitle").innerHTML = "";
       props.get("uiTitle").appendChild(updatedContent);
-      props.get("uiTitle").appendChild(fileInput);
 
       break;
     case "progress":
@@ -240,6 +245,22 @@ function handleStatusChange(statusObj) {
 
       // setup connedNodeIP
       props.set("connectedNodeIp", statusObj.connectedIP);
+
+      // append file input
+      let fileInput = document.createElement("input");
+      fileInput.setAttribute("type", "file");
+      fileInput.setAttribute("multiple", true);
+      fileInput.onchange = onFilesInputHandler;
+      props.get("uiTitle").appendChild(fileInput);
+
       break;
   }
+}
+function onFilesInputHandler(e) {
+  // get files
+  files = e.target.files;
+  // for ech file, create a file handler and let it handle
+  Array.from(files).forEach((file) => {
+    new fileHandler(file).send();
+  });
 }
