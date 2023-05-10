@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/go-chi/chi"
 )
 
 const (
@@ -47,10 +49,11 @@ func OpenPage(url string) {
 }
 
 func (n *Node) handleFileReception(w http.ResponseWriter, r *http.Request) {
-	filename := r.Header.Get("filename")
-	chunkSize := r.Header.Get("chunkSize")
-	chunks := r.Header.Get("chunks")
-	n.infoLog.Printf(filename, chunkSize, chunks)
+	// /{chunkSize}-{totalChunks}-{fileName}
+	fileName := chi.URLParam(r, "fileName")
+	// chunkSize := r.Header.Get("chunkSize")
+	// chunks := r.Header.Get("totalChunks")
+	n.infoLog.Printf("%+v", fileName)
 
 	// upgrade connection to websocket
 	// var upgrader = websocket.Upgrader{

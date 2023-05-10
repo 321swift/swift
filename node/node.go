@@ -69,7 +69,7 @@ func (n *Node) Start() {
 		go func() {
 			fileRouter := chi.NewRouter()
 			fileRouter.Use(middleware.Logger)
-			fileRouter.HandleFunc("/file", n.handleFileReception)
+			fileRouter.HandleFunc("/{chunkSize}-{totalChunks}-{fileName}", n.handleFileReception)
 
 			http.Serve(listener, fileRouter)
 		}()
