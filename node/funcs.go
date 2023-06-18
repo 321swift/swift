@@ -55,7 +55,7 @@ func (n *Node) handleFileReception(w http.ResponseWriter, r *http.Request) {
 	// chunks := r.Header.Get("totalChunks")
 	n.infoLog.Printf("%+v", fileName)
 
-	// upgrade connection to websocket
+	// upgrade connection to websockegit t
 	// var upgrader = websocket.Upgrader{
 	// 	ReadBufferSize:  1024,
 	// 	WriteBufferSize: 1024,
