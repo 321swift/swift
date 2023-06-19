@@ -1,10 +1,13 @@
--------Overview--------
+# Overview
+
 The Swift application is designed to transfer files from one computer to another using a secure and efficient method. The application consists of two parts - a sender and a receiver - and uses a state machine architecture to manage the transfer process.
 
-------Architecture-------
+# Architecture
+
 The Swift application uses a state machine architecture to manage the file transfer process. The state machine consists of a struct or object containing variables that define the current state of the application at any given time. It also includes data channels for sending data out of the core of the application and receiving input from outside the application.
 
---------Installation-------
+# Installation
+
 Download the Swift application installer from the official website
 Run the installer on both the sender and receiver computers
 Follow the prompts to complete the installation process
