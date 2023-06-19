@@ -153,14 +153,14 @@ class fileHandler {
         this.progressBar = new progressBar();
     }
 
-    openConnection(port, chunkSize, chunkCount, filename) {
+    async openConnection(port, chunkSize, chunkCount, filename) {
         // format == ws://ip:port/{chunkSize}-{chunkCount}-{filename}
         if (!props.has("connectedNodeIp")) return null;
         const connectionString = `ws://${props.get(
             "connectedNodeIp"
         )}:${port}/${chunkSize}-${chunkCount}-${filename}`;
 
-        let conn = new WebSocket(connectionString);
+        let conn = await new WebSocket(connectionString);
         console.log(conn);
         if (!!conn) return conn;
         else return null;
@@ -190,48 +190,58 @@ class fileHandler {
         }
 
         const fr = new FileReader();
-        fr.onload = (e) => {
+        fr.onload = async (e) => {
             const content = e.target.result;
             // chunk up file
-            const CHUNK_SIZE = Math.trunc(content.byteLength * 0.05);
+            const CHUNK_SIZE = Math.trunc(content.byteLength * 0.1);
             console.log("file size ", content.byteLength);
             console.log("chunk size ", CHUNK_SIZE);
-            const totalChunks = content.byteLength / CHUNK_SIZE;
+            const totalChunks = Math.ceil(content.byteLength / CHUNK_SIZE);
+            let writtenChunks = 0;
 
-            const conn = this.openConnection(
+            const conn = await this.openConnection(
                 port,
                 CHUNK_SIZE,
                 totalChunks,
                 this.file.name
             );
 
-            if (!conn.readyState) {
-                console.error("unable to oepn file socket");
+            conn.onopen = () => {
+                /* 
+                    insert progress bar
+                */
+                // uiUpdate({ uiPortion: "progress", content: this.progressBar.progressBar });
+                console.log("Connection open, readystate: ", conn.readyState);
+                //send fileChunks
+                for (let chunk = 0; chunk < totalChunks; chunk++) {
+                    let CHUNK = content.slice(
+                        chunk * CHUNK_SIZE,
+                        (chunk + 1) * CHUNK_SIZE
+                    );
+                    conn.send(CHUNK);
+
+                    // update progressbar
+                    writtenChunks += CHUNK.byteLength;
+                    // this.progressBar.update(
+                    //     `${(100 * writtenChunks) / content.byteLength}%`
+                    // );
+                }
+                // after sending close connection and return port to pool
+                conn.close();
+            };
+
+            conn.onclose = function () {
                 props.get("connectionPool").done(port);
-                return;
-            }
+                console.info(
+                    writtenChunks,
+                    " chunks / ",
+                    totalChunks,
+                    " total chumks written"
+                );
 
-            /* 
-				insert progress bar
-			*/
-            // uiUpdate({ uiPortion: "progress", content: this.progressBar.progressBar });
-
-            //send fileChunks
-            const writtenChunks = 0;
-            for (let chunk = 0; chunk < totalChunks + 1; chunk++) {
-                let CHUNK = content.slice(chunk * CHUNK_SIZE, (chunk + 1) * CHUNK_SIZE);
-                conn.send(CHUNK);
-
-                // update progressbar
-                writtenChunks += CHUNK.byteLength;
-                this.progressBar.update(`${(100 * writtenChunks) / content.byteLength}%`);
-            }
-            // after sending close connection and return port to pool
-            conn.close();
-            this.props.get("connectionPool").done(port);
-
-            // call done event on window so that filehandler can empty wait queue
-            window.dispatchEvent(fileSentEvent);
+                // call done event on window so that filehandler can empty wait queue
+                window.dispatchEvent(fileSentEvent);
+            };
         };
         fr.readAsArrayBuffer(this.file);
     }

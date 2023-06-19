@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/gorilla/websocket"
 )
 
 const (
@@ -49,25 +50,32 @@ func OpenPage(url string) {
 }
 
 func (n *Node) handleFileReception(w http.ResponseWriter, r *http.Request) {
+	// upgrade connection to websockegit t
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		n.errLog.Println(err)
+		return
+	}
+
 	// /{chunkSize}-{totalChunks}-{fileName}
 	fileName := chi.URLParam(r, "fileName")
-	// chunkSize := r.Header.Get("chunkSize")
-	// chunks := r.Header.Get("totalChunks")
-	n.infoLog.Printf("%+v", fileName)
+	chunkSize := chi.URLParam(r, "chunkSize")
+	chunks := chi.URLParam(r, "totalChunks")
+	n.infoLog.Printf("incomming file: name:%+v chunkSize:%v  totalChunks:%v", fileName, chunkSize, chunks)
+	for {
+		_, content, err := conn.ReadMessage()
+		if err != nil {
+			n.errLog.Println(err)
+			break
+		}
 
-	// upgrade connection to websockegit t
-	// var upgrader = websocket.Upgrader{
-	// 	ReadBufferSize:  1024,
-	// 	WriteBufferSize: 1024,
-	// }
-
-	// upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	// conn, err := upgrader.Upgrade(w, r, nil)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
-	// messageType, message, err := conn.ReadMessage()
+		n.infoLog.Println(content)
+	}
 
 }
 
