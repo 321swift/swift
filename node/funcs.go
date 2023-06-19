@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"os/exec"
+	"path"
 	"runtime"
 	"strings"
+	"swift/global"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -67,14 +70,21 @@ func (n *Node) handleFileReception(w http.ResponseWriter, r *http.Request) {
 	chunkSize := chi.URLParam(r, "chunkSize")
 	chunks := chi.URLParam(r, "totalChunks")
 	n.infoLog.Printf("incomming file: name:%+v chunkSize:%v  totalChunks:%v", fileName, chunkSize, chunks)
+
+	writeDir := global.CreateDirectoryIfNotExists("Documents/SwiftReceived")
+	tempFile, err := os.Create(path.Join(writeDir, fileName))
+	if err != nil {
+		n.errLog.Println(err)
+		return
+	}
 	for {
 		_, content, err := conn.ReadMessage()
 		if err != nil {
 			n.errLog.Println(err)
 			break
 		}
-
-		n.infoLog.Println(content)
+		n.infoLog.Println("writting to file..")
+		tempFile.Write(content)
 	}
 
 }

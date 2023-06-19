@@ -28,10 +28,10 @@ func GetAvailablePort(desiredPort int) int {
 	}
 }
 
-func CreateDirectoryIfNotExists(dirName string) (string, error) {
+func CreateDirectoryIfNotExists(dirName string) string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return "", err
+		return "/"
 	}
 
 	dirPath := filepath.Join(homeDir, dirName)
@@ -40,11 +40,11 @@ func CreateDirectoryIfNotExists(dirName string) (string, error) {
 	if os.IsNotExist(err) {
 		err = os.Mkdir(dirPath, 0755)
 		if err != nil {
-			return "", err
+			return "/"
 		}
 	}
 
-	return dirPath, nil
+	return dirPath
 }
 
 type Message struct {
